@@ -1,0 +1,1713 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TRAIN</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="TRAIN">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="theme-color" content="#1A1410">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<style>
+:root{
+  --coral:#C94B2A;
+  --coral-light:#F0CDBE;
+  --coral-pale:#FAF0EB;
+  --ink:#1A1410;
+  --ink2:#4A3E38;
+  --ink3:#8C7B74;
+  --border:#E8DDD9;
+  --bg:#FDFAF8;
+  --white:#FFFFFF;
+  --green:#2A7A52;
+  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--bg);color:var(--ink);min-height:100vh;font-size:15px}
+
+.header{background:var(--ink);color:var(--white);padding:1.75rem 1.5rem 1.5rem}
+.header-label{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--coral-light);margin-bottom:.3rem}
+.header h1{font-size:1.8rem;font-weight:300;line-height:1.15;margin-bottom:.2rem}
+.header h1 strong{font-weight:600;color:var(--coral-light)}
+.header-pills{display:flex;gap:6px;margin-top:1rem;flex-wrap:wrap}
+.pill{font-size:11px;color:rgba(255,255,255,.6);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:3px 10px}
+
+.tabs-wrap{background:var(--white);border-bottom:1px solid var(--border);padding:0 1rem;display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tabs-wrap::-webkit-scrollbar{display:none}
+.tab{flex-shrink:0;padding:.9rem 1.1rem .75rem;font-size:13px;font-weight:400;color:var(--ink3);cursor:pointer;border:none;border-bottom:2px solid transparent;background:none;white-space:nowrap;font-family:var(--font)}
+.tab:hover{color:var(--ink2)}
+.tab.active{color:var(--coral);border-bottom-color:var(--coral);font-weight:500}
+
+.main{max-width:660px;margin:0 auto;padding:1.25rem 1rem 4rem}
+
+.session-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:1rem;flex-wrap:wrap}
+.session-info h2{font-size:1.2rem;font-weight:600;color:var(--ink)}
+.session-info p{font-size:12px;color:var(--ink3);margin-top:2px}
+.date-wrap{display:flex;flex-direction:column;gap:3px;align-items:flex-end}
+.date-wrap label{font-size:11px;color:var(--ink3);letter-spacing:.04em;text-transform:uppercase}
+.date-wrap input[type=date]{font-size:13px;padding:5px 9px;border:1px solid var(--border);border-radius:8px;background:var(--white);color:var(--ink);font-family:var(--font)}
+
+.prog-wrap{margin-bottom:1.25rem}
+.prog-labels{display:flex;justify-content:space-between;font-size:12px;color:var(--ink3);margin-bottom:4px}
+.prog-bar{height:3px;background:var(--border);border-radius:2px;overflow:hidden}
+.prog-fill{height:100%;background:var(--coral);border-radius:2px;transition:width .35s}
+
+.card{background:var(--white);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:10px}
+.card-head{padding:.65rem 1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.card-badge{font-size:10px;font-weight:600;letter-spacing:.05em;background:var(--coral-pale);color:var(--coral);border:1px solid var(--coral-light);padding:2px 8px;border-radius:10px;flex-shrink:0}
+.card-title{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--ink2)}
+.card-note{font-size:11px;color:var(--ink3);margin-left:auto}
+
+.ex{display:grid;grid-template-columns:26px 1fr;gap:8px;padding:.8rem 1rem;border-bottom:1px solid var(--border);align-items:start}
+.ex:last-child{border-bottom:none}
+.chk{width:20px;height:20px;border:1.5px solid var(--border);border-radius:5px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;background:var(--white);transition:all .15s}
+.chk:hover{border-color:var(--coral-light)}
+.chk.done{background:var(--green);border-color:var(--green)}
+.chk-icon{display:none}
+.chk.done .chk-icon{display:block;width:10px;height:10px}
+.chk.done .chk-icon::after{content:'';display:block;width:5px;height:9px;border:2px solid #fff;border-top:none;border-left:none;transform:rotate(45deg) translate(0,-2px)}
+.ex-name{font-size:14px;color:var(--ink);line-height:1.35}
+.ex-name.done{text-decoration:line-through;color:var(--ink3)}
+.ex-desc{font-size:12px;color:var(--ink3);margin-top:2px;line-height:1.4}
+.ex-desc b{font-weight:500;color:var(--coral)}
+.ex-fields{display:flex;gap:6px;margin-top:7px;flex-wrap:wrap}
+.fld{display:flex;flex-direction:column;gap:3px}
+.fld-label{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3)}
+.fld input{font-size:12px;font-family:var(--font);padding:5px 8px;border:1px solid var(--border);border-radius:7px;background:var(--bg);color:var(--ink);width:130px}
+.fld input:focus{outline:none;border-color:var(--coral)}
+
+.feel-card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:10px}
+.feel-title{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--ink3);margin-bottom:.75rem}
+.stars-row{display:flex;align-items:center;gap:.6rem;margin-bottom:.75rem}
+.stars-label{font-size:13px;color:var(--ink2)}
+.stars{display:flex;gap:3px}
+.star{font-size:24px;cursor:pointer;color:var(--border);line-height:1;user-select:none;transition:color .1s}
+.star.on{color:#E8A020}
+textarea.note-area{width:100%;font-family:var(--font);font-size:13px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--ink);resize:vertical;min-height:68px;line-height:1.5}
+textarea.note-area:focus{outline:none;border-color:var(--coral)}
+
+.actions{display:flex;align-items:center;gap:10px;margin-top:1rem;flex-wrap:wrap}
+.btn{font-family:var(--font);font-size:13px;font-weight:500;padding:9px 20px;border-radius:8px;cursor:pointer;transition:all .15s;border:1px solid}
+.btn-primary{background:var(--coral);color:#fff;border-color:var(--coral)}
+.btn-primary:hover{background:#A83B1E}
+.btn-secondary{background:var(--white);color:var(--ink2);border-color:var(--border)}
+.btn-secondary:hover{border-color:var(--ink3)}
+.saved-ok{font-size:12px;color:var(--green);opacity:0;transition:opacity .3s}
+.saved-ok.show{opacity:1}
+
+.hist-section{margin-top:1.5rem}
+.hist-title{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--ink3);margin-bottom:.6rem}
+.hist-empty{font-size:13px;color:var(--ink3);font-style:italic}
+.hist-item{background:var(--white);border:1px solid var(--border);border-radius:9px;padding:.65rem .9rem;margin-bottom:7px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.hist-date{font-size:13px;font-weight:500}
+.hist-meta{font-size:11px;color:var(--ink3);margin-top:1px}
+.hist-right{display:flex;align-items:center;gap:7px;flex-shrink:0}
+.hist-stars{font-size:12px;color:#E8A020}
+.btn-small{font-size:11px;padding:3px 9px;border:1px solid var(--border);border-radius:6px;background:none;color:var(--ink3);cursor:pointer;font-family:var(--font)}
+.btn-small:hover{border-color:var(--coral);color:var(--coral)}
+
+.info-box{background:var(--coral-pale);border:1px solid var(--coral-light);border-radius:12px;padding:1rem;margin-top:10px}
+.info-box-title{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--coral);margin-bottom:.6rem}
+.info-box ul{list-style:none;padding:0}
+.info-box li{font-size:12px;color:var(--ink2);padding:2px 0 2px 14px;position:relative;line-height:1.45}
+.info-box li::before{content:'·';position:absolute;left:3px;color:var(--coral);font-weight:700}
+
+.run-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.run-stat{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:1rem 1.1rem}
+.run-stat-label{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin-bottom:.4rem}
+.run-stat-input{font-size:1.6rem;font-weight:300;color:var(--ink);font-family:var(--font);width:100%;border:none;background:transparent;outline:none;padding:0}
+.run-stat-input::placeholder{color:var(--border);font-size:1.4rem}
+.run-stat-unit{font-size:11px;color:var(--ink3);margin-top:2px}
+.run-stat.computed{background:var(--coral-pale);border-color:var(--coral-light)}
+.run-stat.computed .run-stat-label{color:var(--coral)}
+.run-stat.computed .run-stat-value{font-size:1.6rem;font-weight:300;color:var(--coral)}
+.run-type-row{display:flex;gap:7px;margin-bottom:10px;flex-wrap:wrap}
+.run-type-btn{font-size:12px;font-family:var(--font);padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:var(--white);color:var(--ink3);cursor:pointer;transition:all .15s}
+.run-type-btn.active{background:var(--coral);border-color:var(--coral);color:#fff;font-weight:500}
+
+ #login-box{position:fixed;inset:0;z-index:50;background:rgba(26,20,16,.55);display:flex;align-items:center;justify-content:center;padding:1.5rem}
+#login-form{background:var(--white);border-radius:14px;padding:1.5rem;max-width:380px;width:100%;display:flex;flex-direction:column;gap:.8rem}
+.login-title{font-size:1.4rem;font-weight:600}
+#login-form p{font-size:13px;color:var(--ink2)}
+#login-form label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--ink2)}
+#login-form input{font:inherit;font-size:16px;padding:10px 12px;border:1px solid var(--border);border-radius:8px}
+#login-err{font-size:13px;color:var(--coral)}
+.sync-pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:3px 10px;border-radius:20px;margin-top:.6rem}
+.sync-pill.synced{background:rgba(42,122,82,.18);color:#7ecfaa}
+.sync-pill.syncing{background:rgba(232,160,32,.15);color:#E8A020}
+.sync-pill.offline{background:rgba(255,255,255,.08);color:rgba(255,255,255,.4)}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+
+/* Calendar / Home */
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.cal-nav-title{font-size:1.05rem;font-weight:600;color:var(--ink);text-transform:capitalize}
+.cal-nav-btn{background:none;border:1px solid var(--border);border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:16px;color:var(--ink2);display:flex;align-items:center;justify-content:center;font-family:var(--font);transition:border-color .15s}
+.cal-nav-btn:hover{border-color:var(--coral);color:var(--coral)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:1.25rem}
+.cal-dow{font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--ink3);text-align:center;padding-bottom:4px}
+.cal-day{min-height:48px;border-radius:9px;border:1px solid transparent;padding:5px 4px 4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;transition:background .12s, border-color .12s;position:relative}
+.cal-day:hover{background:var(--coral-pale);border-color:var(--coral-light)}
+.cal-day.today{border-color:var(--coral)!important}
+.cal-day.empty{cursor:default;pointer-events:none}
+.cal-day.other-month .cal-num{color:var(--border)}
+.cal-num{font-size:12px;font-weight:500;color:var(--ink2);line-height:1}
+.cal-dots{display:flex;gap:2px;flex-wrap:wrap;justify-content:center;margin-top:2px}
+.cal-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.cal-rest-badge{position:absolute;top:4px;right:4px;width:14px;height:14px;border-radius:50%;background:var(--border);color:var(--ink2);font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;line-height:1}
+.dot-carol{background:#A89F99}
+.dot-s5{background:#1A8FA8}
+.dot-arya{background:#C9B3EE}
+.dot-arya-fire{background:#9B5DE5}
+.dot-arya-tonifica{background:#E0589B}
+.dot-arya-gambe{background:#F08A4B}
+
+/* Arya log specifici */
+.arya-card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:.9rem 1rem;margin-bottom:10px}
+.arya-card-label{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin-bottom:.4rem}
+.arya-card input,.arya-card select,.arya-card textarea{width:100%;font-family:var(--font);font-size:14px;border:none;background:transparent;outline:none;padding:0;color:var(--ink)}
+.arya-card select{cursor:pointer;font-size:14px}
+.arya-card textarea{font-size:13px;resize:vertical;min-height:80px;line-height:1.5}
+.arya-card.compact-row{display:flex;gap:1rem;align-items:center}
+.arya-card.compact-row > div{flex:1}
+.arya-day-badge{display:inline-block;background:#9B5DE5;color:#fff;font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;margin-left:8px;vertical-align:middle}
+
+.day-detail{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:10px}
+.day-detail-date{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--ink3);margin-bottom:.6rem}
+.day-sess{display:flex;align-items:center;gap:10px;padding:.5rem 0;border-bottom:1px solid var(--border)}
+.day-sess:last-child{border-bottom:none}
+.day-sess-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.day-sess-name{font-size:13px;font-weight:500;color:var(--ink);flex:1}
+.day-sess-meta{font-size:12px;color:var(--ink3)}
+.day-sess-stars{font-size:11px;color:#E8A020}
+.day-sess-goto{font-size:11px;padding:3px 9px;border:1px solid var(--border);border-radius:6px;background:none;color:var(--coral);cursor:pointer;font-family:var(--font);border-color:var(--coral-light)}
+.day-sess-goto:hover{background:var(--coral-pale)}
+
+.home-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1.25rem}
+.home-stat{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:.85rem .9rem;text-align:center}
+.home-stat-val{font-size:1.6rem;font-weight:300;color:var(--coral);line-height:1}
+.home-stat-label{font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--ink3);margin-top:4px}
+
+@media(max-width:480px){
+  .run-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-label">ARYA Training</div>
+  <h1>Allenamento<br><strong>Giorgia</strong></h1>
+  <div class="header-pills">
+    <span class="pill">ARYA Training</span>
+    <span class="pill">Corsa outdoor</span>
+    <span class="pill">Archivio Carol</span>
+  </div>
+  <div id="sync-pill" class="sync-pill offline"><div class="sync-dot"></div><span>Connessione...</span>&nbsp;&nbsp;<span onclick="syncNow()" style="cursor:pointer;text-decoration:underline;opacity:.7">↺ Sincronizza</span></div>
+</div>
+
+<div class="tabs-wrap" id="tabs-wrap"></div>
+<div class="main" id="main-content"></div>
+
+<script>
+var ARYA_CATS = ['Lower body','Upper body','Total body','Glutei','Core','Cardio','Pilates','Yoga','Postural','Mobility / Stretching','Drenaggio / Linfodrenante','Altro'];
+var ARYA_START_DATE = '2026-06-22'; // lunedì giorno 1 del programma Strong
+
+var SCHEDULES = [
+  {id:'arya', name:'🏋️ ARYA', sub:'Programma Strong', aryaMode: true},
+  {id:'s1', name:'Scheda 1', sub:'Lower body + Back', blocks:[
+    {title:'Attivazione', note:'1 giro', exercises:[
+      {name:'Quadrupedia alternata / quadrupedia attiva', meta:'20 reps'},
+      {name:'Inchworm to Plank', meta:'8 reps'},
+      {name:'Ponte Glutei (3" isometria)', meta:'20 reps'}
+    ]},
+    {title:'WOD Forza', note:'60" rest tra le serie', exercises:[
+      {name:'Goblet Squat', meta:'4 serie x 10 reps &middot; 2" isometria', kg:'5/8'},
+      {name:'Stacchi', meta:'4 serie x 10 reps', kg:'8/10'}
+    ]},
+    {title:'Superserie A', note:'3 serie x 12 reps &middot; 60" rest', sup:'A', exercises:[
+      {name:'Affondi indietro', meta:'12 reps (6+6)', kg:'8'},
+      {name:'Rematore', meta:'12 reps', kg:'8'}
+    ]},
+    {title:'Superserie B', note:'3 serie x 12 reps &middot; 60" rest', sup:'B', exercises:[
+      {name:'Hip Thrust', meta:'12 reps', kg:'10/12'},
+      {name:'Renegade', meta:'12 reps (6+6)', kg:'3'}
+    ]},
+    {title:'Finisher Core', note:'3 giri &middot; 30" rest', exercises:[
+      {name:'High Plank', meta:'45"'},
+      {name:'Iperestensioni busto e gambe', meta:'10 reps'}
+    ]}
+  ]},
+  {id:'s2', name:'Scheda 2', sub:'Upper body + Back + Core', blocks:[
+    {title:'Attivazione', note:'2 giri &middot; 30" rest', exercises:[
+      {name:'Inchworm to Plank', meta:'10 reps'},
+      {name:'Quadrupedia alternata / quadrupedia attiva', meta:'10 reps'},
+      {name:'Quadrupedia attiva', meta:'30"'}
+    ]},
+    {title:'WOD Upper body', note:'60"-75" rest', exercises:[
+      {name:'Floor Press', meta:'4 serie x 10 reps', kg:'5/6'},
+      {name:'Renegade', meta:'3 serie x 10 reps (10 per lato)', kg:'3/4'}
+    ]},
+    {title:'Superserie A', note:'3 serie x 12 reps', sup:'A', exercises:[
+      {name:'Arnold Press', meta:'12 reps', kg:'4'},
+      {name:'Alzate laterali', meta:'12 reps', kg:'4'}
+    ]},
+    {title:'Superserie B', note:'3 serie x 12 reps', sup:'B', exercises:[
+      {name:'Rematore', meta:'12 reps', kg:'8'},
+      {name:'Curl Bicipiti (2" isometria a 90°)', meta:'12 reps', kg:'4/5'}
+    ]},
+    {title:'Finisher Core', note:'3 giri x 20 reps &middot; 30" rest', exercises:[
+      {name:'Russian Twist', meta:'10 per lato', kg:'8'},
+      {name:'Low Plank + Tap delle ginocchia', meta:'20 reps'}
+    ]}
+  ]},
+  {id:'s3', name:'Scheda 3', sub:'Full body - PHA', blocks:[
+    {title:'Attivazione', note:'2 giri &middot; 30" rest', exercises:[
+      {name:'Inchworm to Plank', meta:'12 reps'},
+      {name:'Side Plank dinamico', meta:'30" per lato'},
+      {name:'Sit Up', meta:'10 reps'}
+    ]},
+    {title:'Circuito PHA', note:'3-4 giri &middot; 45" lavoro / 15" rest &middot; 60" tra i giri', exercises:[
+      {name:'Thruster', meta:'45" di lavoro', kg:'5'},
+      {name:'Rematore', meta:'45" di lavoro', kg:'8'},
+      {name:'Affondi laterali alternati', meta:'45" di lavoro', kg:'5/8'},
+      {name:'Alzate laterali', meta:'45" di lavoro', kg:'3'},
+      {name:'Ponte Glutei gambe semitese', meta:'45" di lavoro', kg:'5/8'},
+      {name:'Mountain Climbing controllato', meta:'45" di lavoro'}
+    ]},
+    {title:'Finisher Core', note:'3 giri &middot; no rest', exercises:[
+      {name:'Side Plank dinamico lato destro', meta:'30/40"'},
+      {name:'Side Plank dinamico lato sinistro', meta:'30/40"'},
+      {name:'Crunch + Reverse Crunch', meta:'10 reps'}
+    ]}
+  ]},
+  {id:'s4', name:'Scheda 4', sub:'Glutei + Core', blocks:[
+    {title:'Attivazione', note:'2 giri &middot; no rest', exercises:[
+      {name:'Inchworm to Plank', meta:'8 reps'},
+      {name:'Ponte Glutei a corpo libero', meta:'10 reps'},
+      {name:'Quadrupedia alternata / quadrupedia attiva', meta:'6 reps'},
+      {name:'Ponte Glutei monopodalico', meta:'10 reps per lato'}
+    ]},
+    {title:'WOD Glutes + Core', note:'60"-75" rest', exercises:[
+      {name:'Affondi bulgari (mano opposta)', meta:'3 serie x 10 reps per lato', kg:'5'},
+      {name:'Sumo Squat', meta:'4 serie x 12 reps', kg:'da definire'}
+    ]},
+    {title:'Superserie Glutei', note:'3 x 15 reps', sup:'G', exercises:[
+      {name:'Hip Thrust', meta:'15 reps', kg:'10/12'},
+      {name:'Spinte laterali in quadrupedia', meta:'15 reps per lato'}
+    ]},
+    {title:'Superserie Core', note:'vedi reps', sup:'C', exercises:[
+      {name:'Renegade lento (1" tenuta)', meta:'3x8 &mdash; 4 per lato', kg:'4'},
+      {name:'Leg Raises o Reverse Crunch', meta:'3x15'}
+    ]},
+    {title:'Finisher Glutei', note:'3 giri &middot; 45" rest', exercises:[
+      {name:'Ponte Glutei', meta:'60"', kg:'10 (o 20 singolo)'},
+      {name:'Ponte Glutei isometrico', meta:'45"', kg:'10'},
+      {name:'Ponte Glutei molleggiato', meta:'30"', kg:'10'}
+    ]}
+  ]}
+  ,
+  {id:'s5', name:'Corsa 🏃', sub:'Outdoor — Jolly settimanale', runMode: true}
+];
+
+var CAROL_IDS = ['s1','s2','s3','s4']; // schede Carol Enrico — raggruppate in "Archivio Carol"
+
+var CARDIO = [
+  'Camminata veloce: 5-6 km/h, inclinazione 1-2%',
+  'Camminata in salita: 4.5-5 km/h, inclinazione 8-10%',
+  'Ellittica o Bike: resistenza media-alta',
+  'Interval Training: 1 min cammino + 1 min corsa leggera (7-8 km/h)',
+  'Circuito corpo libero: skip &middot; squat + molleggi &middot; cross climbing &middot; 3 giri'
+];
+
+var TIPS = [
+  'Aumenta il carico solo quando l\'esecuzione e\' stabile &mdash; manda il video prima',
+  'Recupero attivo tra i blocchi: camminata leggera o stretching dinamico',
+  '3-4 sessioni a settimana con qualita\' valgono piu\' di sessioni lunghe e affrettate',
+  'Idratazione: almeno 1.5-2 litri d\'acqua al giorno',
+  'Cura il sonno: minimo 7 ore',
+  'Giorni off: 10 minuti di stretching o mobilita\'',
+  'Invia video a Carol: alzate laterali &middot; sumo squat &middot; renegade &middot; affondi bulgari &middot; rematore'
+];
+
+var currentTab = 'home';
+var state = {};
+var db = null;
+var dbRef = null;
+var _fbPending = false;
+var _freshTabs = {}; // schede resettate dopo il salvataggio — mostrano form vuoto
+var storicoFilter = 'all'; // filtro corrente nella tab Storico: 'all' | 'arya' | 'carol' | 's5'
+var aryaCurrentIdx = 1;    // indice della sessione ARYA attualmente visibile nel giorno corrente (1, 2, 3...)
+var carolCurrentSub = 's1'; // ultima scheda Carol aperta (s1..s4), ricordata dentro "Archivio Carol"
+
+// --- Supabase (lo stesso database di ENLIST) ---
+// Ogni voce dello stato (una sessione, un giorno di riposo...) è una riga a sé della tabella "train":
+// si inviano solo le voci cambiate, così Mac e iPhone non si sovrascrivono a vicenda.
+var SB_URL = "https://jwbzadaxregnukdevcrm.supabase.co";
+var SB_KEY = "sb_publishable_UGraDoUu9WgRlj4arJhjWg_dalxkVvU";
+var sb = null;
+try {
+  sb = supabase.createClient(SB_URL, SB_KEY, {auth: {persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, storageKey: 'train-auth'}});
+} catch(e) { sb = null; }
+var LS_KEY = 'wt_g_jan2025';
+var LS_SYNCED = 'train_synced';
+var synced = {};            // ultima versione nota del database, voce per voce
+try { synced = JSON.parse(localStorage.getItem(LS_SYNCED) || '{}'); } catch(e) { synced = {}; }
+// date_* = la data aperta su ogni scheda: è solo di questo dispositivo, non si sincronizza
+function isLocalKey(k) { return k.indexOf('date_') === 0; }
+
+function setSyncPill(status, text) {
+  var el = document.getElementById('sync-pill');
+  if (!el) return;
+  el.className = 'sync-pill ' + status;
+  el.innerHTML = '<div class="sync-dot"></div><span>' + text + '</span>';
+}
+
+function todayStr() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function persistLocal() {
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify(state));
+    localStorage.setItem(LS_SYNCED, JSON.stringify(synced));
+  } catch(e) {}
+}
+
+function sameVal(a, b) { return JSON.stringify(a) === JSON.stringify(b); }
+
+function dirtyKeys() {
+  var ks = {}, k;
+  for (k in state) if (!isLocalKey(k) && !sameVal(state[k], synced[k])) ks[k] = 1;
+  for (k in synced) if (!(k in state)) ks[k] = 1;
+  return Object.keys(ks);
+}
+
+// database -> qui, senza toccare le voci cambiate qui e non ancora inviate. Dice se è cambiato qualcosa.
+async function pull() {
+  var r = await sb.from('train').select('id,data').limit(10000);
+  if (r.error) throw r.error;
+  var dirty = {}; dirtyKeys().forEach(function(k) { dirty[k] = 1; });
+  var remote = {}, changed = false, k;
+  r.data.forEach(function(x) { remote[x.id] = x.data; });
+  for (k in remote) if (!dirty[k] && !sameVal(state[k], remote[k])) { state[k] = remote[k]; changed = true; }
+  for (k in synced) if (!(k in remote) && !dirty[k] && (k in state)) { delete state[k]; changed = true; }
+  synced = remote;
+  persistLocal();
+  return changed;
+}
+
+// qui -> database, solo le voci cambiate
+var _pushing = false, _pushAgain = false;
+async function push() {
+  if (_pushing) { _pushAgain = true; return; }
+  _pushing = true;
+  try {
+    do {
+      _pushAgain = false;
+      var ks = dirtyKeys();
+      if (!ks.length) break;
+      var up = [], del = [];
+      ks.forEach(function(k) {
+        if (k in state) up.push({id: k, data: JSON.parse(JSON.stringify(state[k])), updated_at: new Date().toISOString()});
+        else del.push(k);
+      });
+      if (up.length) { var r = await sb.from('train').upsert(up); if (r.error) throw r.error; }
+      if (del.length) { var r2 = await sb.from('train').delete().in('id', del); if (r2.error) throw r2.error; }
+      up.forEach(function(x) { synced[x.id] = x.data; });
+      del.forEach(function(k) { delete synced[k]; });
+      persistLocal();
+    } while (_pushAgain);
+  } finally { _pushing = false; }
+}
+
+function rerender() {
+  renderTabs();
+  if (currentTab === 'home') renderHome();
+  else if (currentTab === 'storico') renderStorico();
+  else renderMain();
+}
+
+function loadState() {
+  // 1. Carica subito i dati di questo dispositivo (render istantaneo)
+  try {
+    var s = localStorage.getItem(LS_KEY);
+    if (s) state = JSON.parse(s);
+  } catch(e) { state = {}; }
+  if (!sb) { setSyncPill('offline', 'Offline — dati locali'); return; }
+  // 2. Se sei già entrata su questo dispositivo, sincronizza; altrimenti chiede l'accesso
+  sb.auth.getSession().then(function(res) {
+    if (res.data && res.data.session) syncNow(true);
+    else showLogin();
+  }).catch(function() { setSyncPill('offline', 'Offline — dati locali'); });
+}
+
+function syncNow(firstTime) {
+  if (!sb) { setSyncPill('offline', 'Nessuna connessione'); return; }
+  setSyncPill('syncing', 'Sincronizzazione...');
+  push().then(pull).then(function(changed) {
+    setSyncPill('synced', 'Sincronizzato');
+    if (changed || firstTime === true) rerender();
+  }).catch(function(e) {
+    console.warn('TRAIN: sincronizzazione rimandata', e);
+    setSyncPill('offline', navigator.onLine ? 'Errore sync — salvato in locale' : 'Offline — dati locali');
+  });
+}
+
+var _pushTimer = null;
+function saveLocalOnly() {
+  // Salva subito su questo dispositivo; dopo qualche secondo invia anche al database
+  persistLocal();
+  clearTimeout(_pushTimer);
+  _pushTimer = setTimeout(function() { if (sb) push().catch(function() {}); }, 4000);
+}
+
+function saveState() {
+  // Salva su questo dispositivo e invia subito al database
+  persistLocal();
+  if (!sb) return;
+  setSyncPill('syncing', 'Salvataggio...');
+  push().then(function() {
+    setSyncPill('synced', 'Sincronizzato');
+  }).catch(function() {
+    setSyncPill('offline', 'Errore sync — salvato in locale');
+  });
+}
+
+// accesso: stessa email e password di ENLIST, una volta per dispositivo
+function showLogin() {
+  setSyncPill('offline', 'Accedi per sincronizzare');
+  if (document.getElementById('login-box')) return;
+  var box = document.createElement('div');
+  box.id = 'login-box';
+  box.innerHTML = '<form id="login-form" novalidate><div class="login-title">Entra in TRAIN</div>' +
+    '<p>Stessa email e password di ENLIST. Lo fai una volta sola su ogni dispositivo.</p>' +
+    '<label>Email<input type="email" id="login-email" autocomplete="username" required></label>' +
+    '<label>Password<input type="password" id="login-pass" autocomplete="current-password" required></label>' +
+    '<button class="btn btn-primary" type="submit">Entra</button><span id="login-err"></span></form>';
+  document.body.appendChild(box);
+  document.getElementById('login-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var em = document.getElementById('login-email').value.trim(), pw = document.getElementById('login-pass').value;
+    var err = document.getElementById('login-err');
+    err.textContent = '';
+    sb.auth.signInWithPassword({email: em, password: pw}).then(function(r) {
+      if (r.error) { err.textContent = navigator.onLine ? 'Email o password non corrette.' : 'Serve la connessione per il primo accesso.'; return; }
+      box.remove();
+      syncNow(true);
+    });
+  });
+}
+
+// quando torni sull'app o torna la rete, prende le novità dall'altro dispositivo
+document.addEventListener('visibilitychange', function() { if (document.visibilityState === 'visible' && sb) sb.auth.getSession().then(function(r) { if (r.data && r.data.session) syncNow(); }); });
+window.addEventListener('online', function() { if (sb) syncNow(); });
+
+function getDate(sid) {
+  return state['date_' + sid] || todayStr();
+}
+
+function getSess(sid, date) {
+  var k = sid + '__' + date;
+  if (!state[k]) state[k] = {done:{}, weights:{}, exnotes:{}, rating:0, note:''};
+  return state[k];
+}
+
+function countDone(sid, date, blocks) {
+  var sd = getSess(sid, date);
+  var tot = 0, done = 0;
+  for (var i = 0; i < blocks.length; i++) {
+    for (var j = 0; j < blocks[i].exercises.length; j++) {
+      tot++;
+      if (sd.done && sd.done[blocks[i].title + '_' + j]) done++;
+    }
+  }
+  return {tot: tot, done: done};
+}
+
+function esc(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/* ── HOME / PANORAMICA ───────────────────────────────────────── */
+var calYear  = new Date().getFullYear();
+var calMonth = new Date().getMonth(); // 0-based
+
+var SCHED_META = {
+  arya: {name:'🏋️ ARYA', color:'dot-arya', label:'Programma Strong'},
+  s1: {name:'Scheda 1', color:'dot-s1', label:'Lower body + Back'},
+  s2: {name:'Scheda 2', color:'dot-s2', label:'Upper body + Core'},
+  s3: {name:'Scheda 3', color:'dot-s3', label:'Full body PHA'},
+  s4: {name:'Scheda 4', color:'dot-s4', label:'Glutei + Core'},
+  s5: {name:'Corsa 🏃', color:'dot-s5', label:'Outdoor'}
+};
+
+var ARYA_PROGRAMS = [
+  {key:'fire',     match:'fire',     cls:'dot-arya-fire',     name:'ARYA On Fire'},
+  {key:'tonifica', match:'tonifica', cls:'dot-arya-tonifica', name:'ARYA Tonifica & Drena'},
+  {key:'gambe',    match:'gambe',    cls:'dot-arya-gambe',    name:'ARYA Gambe'}
+];
+
+function dotClass(id, sd) {
+  if (id === 'arya') {
+    var txt = ((sd && sd.program) || '').toLowerCase();
+    for (var i = 0; i < ARYA_PROGRAMS.length; i++) {
+      if (txt.indexOf(ARYA_PROGRAMS[i].match) !== -1) return ARYA_PROGRAMS[i].cls;
+    }
+    return 'dot-arya';
+  }
+  if (CAROL_IDS.indexOf(id) !== -1) return 'dot-carol';
+  return SCHED_META[id].color;
+}
+
+function calPrevMonth() { calMonth--; if(calMonth<0){calMonth=11;calYear--;} renderHome(); }
+function calNextMonth() { calMonth++; if(calMonth>11){calMonth=0;calYear++;} renderHome(); }
+
+function getSessionsOnDate(dateStr) {
+  var out = [];
+  // Schede classiche (s1-s4) e Corsa (s5): una sessione per giorno per scheda
+  var ids = ['s1','s2','s3','s4','s5'];
+  for (var i=0;i<ids.length;i++) {
+    var k = ids[i] + '__' + dateStr;
+    if (state[k]) {
+      var sd = state[k];
+      var hasData = false;
+      if (sd.rating && sd.rating > 0) hasData = true;
+      if (sd.note && sd.note.trim()) hasData = true;
+      if (ids[i] === 's5' && (sd.km || sd.pace)) hasData = true;
+      if (sd.done) { for (var dk in sd.done) { if (sd.done[dk]) { hasData = true; break; } } }
+      if (hasData) out.push({id: ids[i], sd: sd});
+    }
+  }
+  // ARYA: scansiona TUTTE le chiavi del giorno (anche multiple sessioni)
+  for (var k2 in state) {
+    var mA = k2.match(/^arya__(\d{4}-\d{2}-\d{2})(?:__(\d+))?$/);
+    if (!mA) continue;
+    if (mA[1] !== dateStr) continue;
+    var sdA = state[k2];
+    if (aryaSessionHasData(sdA)) {
+      out.push({id: 'arya', sd: sdA, idx: mA[2] ? parseInt(mA[2]) : 1});
+    }
+  }
+  return out;
+}
+
+function isRestDay(dateStr) {
+  return !!state['rest_' + dateStr];
+}
+
+function toggleRestDay(dateStr) {
+  var key = 'rest_' + dateStr;
+  if (state[key]) delete state[key];
+  else state[key] = true;
+  saveState();
+  renderHome();
+  showDayDetail(dateStr);
+}
+
+function renderHome() {
+  var today = todayStr();
+  var MONTHS = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+  var DOWS   = ['Lu','Ma','Me','Gi','Ve','Sa','Do'];
+
+  // build set of all session dates for stats
+  var allDates = {};
+  var sessionsByDate = {};
+  for (var k in state) {
+    var m = k.match(/^(?:s\d+|arya)__(\d{4}-\d{2}-\d{2})(?:__\d+)?$/);
+    if (m) {
+      if (!(m[1] in sessionsByDate)) sessionsByDate[m[1]] = getSessionsOnDate(m[1]).length;
+      if (sessionsByDate[m[1]]) allDates[m[1]] = true;
+    }
+  }
+  // Conta TUTTE le sessioni (anche multiple stesso giorno per ARYA)
+  var totalSessions = 0;
+  for (var d2 in allDates) totalSessions += sessionsByDate[d2];
+
+  // sessions this month
+  var monthSess = 0;
+  var monthPrefix = calYear + '-' + (calMonth+1<10?'0':'') + (calMonth+1);
+  for (var d in allDates) { if (d.indexOf(monthPrefix) === 0) monthSess += sessionsByDate[d]; }
+
+  // current streak
+  var streak = 0;
+  var cur = new Date(today);
+  while (true) {
+    var ds = cur.toISOString().slice(0,10);
+    if (getSessionsOnDate(ds).length > 0) { streak++; cur.setDate(cur.getDate()-1); }
+    else break;
+    if (streak > 365) break;
+  }
+
+  var html = '';
+
+  // stats row
+  html += '<div class="home-stats">';
+  html += '<div class="home-stat"><div class="home-stat-val">' + totalSessions + '</div><div class="home-stat-label">Sessioni totali</div></div>';
+  html += '<div class="home-stat"><div class="home-stat-val">' + monthSess + '</div><div class="home-stat-label">Questo mese</div></div>';
+  html += '<div class="home-stat"><div class="home-stat-val">' + streak + '</div><div class="home-stat-label">Streak giorni</div></div>';
+  html += '</div>';
+
+  // calendar nav
+  html += '<div class="cal-nav">';
+  html += '<button class="cal-nav-btn" onclick="calPrevMonth()">&#8249;</button>';
+  html += '<div class="cal-nav-title">' + MONTHS[calMonth] + ' ' + calYear + '</div>';
+  html += '<button class="cal-nav-btn" onclick="calNextMonth()">&#8250;</button>';
+  html += '</div>';
+
+  // grid header
+  html += '<div class="cal-grid">';
+  for (var di=0;di<7;di++) html += '<div class="cal-dow">' + DOWS[di] + '</div>';
+
+  // first day of month (Mon=0)
+  var firstDay = new Date(calYear, calMonth, 1);
+  var startDow = (firstDay.getDay() + 6) % 7; // Mon-based
+  var daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+  var daysInPrev  = new Date(calYear, calMonth, 0).getDate();
+
+  // prev month padding
+  for (var pi=startDow-1; pi>=0; pi--) {
+    var prevD = daysInPrev - pi;
+    var prevMonth = calMonth === 0 ? 11 : calMonth-1;
+    var prevYear  = calMonth === 0 ? calYear-1 : calYear;
+    var prevStr   = prevYear + '-' + (prevMonth+1<10?'0':'') + (prevMonth+1) + '-' + (prevD<10?'0':'') + prevD;
+    var prevSess  = getSessionsOnDate(prevStr);
+    html += '<div class="cal-day other-month" onclick="showDayDetail(\'' + prevStr + '\')">';
+    html += '<span class="cal-num">' + prevD + '</span>';
+    if (prevSess.length) {
+      html += '<div class="cal-dots">';
+      for (var pi2=0;pi2<prevSess.length;pi2++) html += '<div class="cal-dot ' + dotClass(prevSess[pi2].id, prevSess[pi2].sd) + '"></div>';
+      html += '</div>';
+    }
+    if (isRestDay(prevStr)) html += '<div class="cal-rest-badge">R</div>';
+    html += '</div>';
+  }
+
+  // current month days
+  for (var day=1; day<=daysInMonth; day++) {
+    var dateStr = calYear + '-' + (calMonth+1<10?'0':'') + (calMonth+1) + '-' + (day<10?'0':'') + day;
+    var sessions = getSessionsOnDate(dateStr);
+    var isToday  = dateStr === today;
+    html += '<div class="cal-day' + (isToday?' today':'') + '" onclick="showDayDetail(\'' + dateStr + '\')">';
+    html += '<span class="cal-num">' + day + '</span>';
+    if (sessions.length) {
+      html += '<div class="cal-dots">';
+      for (var si=0;si<sessions.length;si++) html += '<div class="cal-dot ' + dotClass(sessions[si].id, sessions[si].sd) + '"></div>';
+      html += '</div>';
+    }
+    if (isRestDay(dateStr)) html += '<div class="cal-rest-badge">R</div>';
+    html += '</div>';
+  }
+
+  // next month padding
+  var filled = startDow + daysInMonth;
+  var remaining = filled % 7 === 0 ? 0 : 7 - (filled % 7);
+  for (var ni=1; ni<=remaining; ni++) {
+    var nextMonth = calMonth === 11 ? 0 : calMonth+1;
+    var nextYear  = calMonth === 11 ? calYear+1 : calYear;
+    var nextStr   = nextYear + '-' + (nextMonth+1<10?'0':'') + (nextMonth+1) + '-' + (ni<10?'0':'') + ni;
+    html += '<div class="cal-day other-month" onclick="showDayDetail(\'' + nextStr + '\')">';
+    html += '<span class="cal-num">' + ni + '</span>';
+    if (isRestDay(nextStr)) html += '<div class="cal-rest-badge">R</div>';
+    html += '</div>';
+  }
+
+  html += '</div>'; // cal-grid
+
+  // legend
+  html += '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:1.25rem">';
+  var legendItems = [{cls:'dot-arya', name:'🏋️ ARYA Strong / altro'}];
+  for (var lp=0;lp<ARYA_PROGRAMS.length;lp++) legendItems.push({cls:ARYA_PROGRAMS[lp].cls, name:'🏋️ ' + ARYA_PROGRAMS[lp].name});
+  legendItems.push({cls:'dot-carol', name:'📦 Archivio Carol'});
+  legendItems.push({cls:'dot-s5', name:SCHED_META.s5.name});
+  for (var li=0;li<legendItems.length;li++) {
+    html += '<div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink3)">';
+    html += '<div class="cal-dot ' + legendItems[li].cls + '"></div>' + legendItems[li].name + '</div>';
+  }
+  html += '</div>';
+
+  // day detail placeholder
+  html += '<div id="day-detail-wrap"></div>';
+
+  document.getElementById('main-content').innerHTML = html;
+}
+
+function showDayDetail(dateStr) {
+  var sessions = getSessionsOnDate(dateStr);
+  var wrap = document.getElementById('day-detail-wrap');
+  if (!wrap) return;
+  var p = dateStr.split('-');
+  var fmt = p[2] + '/' + p[1] + '/' + p[0];
+  var html = '<div class="day-detail">';
+  html += '<div class="day-detail-date">' + fmt + '</div>';
+  if (!sessions.length) {
+    html += '<div style="font-size:13px;color:var(--ink3);font-style:italic">Nessuna sessione registrata.</div>';
+  } else {
+    for (var i=0;i<sessions.length;i++) {
+      var s = sessions[i];
+      var meta = SCHED_META[s.id];
+      var r = s.sd.rating || 0;
+      var stars = r ? '★'.repeat(r) : '';
+      var extra = '';
+      if (s.id === 's5') {
+        if (s.sd.km) extra += s.sd.km + ' km';
+        if (s.sd.pace) extra += (extra?' · ':'') + s.sd.pace + ' min/km';
+      } else if (s.id === 'arya') {
+        var ex2 = [];
+        if (s.sd.program) ex2.push(s.sd.program);
+        if (s.sd.category) ex2.push(s.sd.category);
+        if (s.sd.duration) ex2.push(s.sd.duration + ' min');
+        extra = ex2.join(' · ');
+      } else {
+        var blk = null;
+        for (var bi=0;bi<SCHEDULES.length;bi++) { if (SCHEDULES[bi].id===s.id) { blk=SCHEDULES[bi]; break; } }
+        if (blk && blk.blocks) {
+          var c = countDone(s.id, dateStr, blk.blocks);
+          extra = c.done + '/' + c.tot + ' esercizi';
+        }
+      }
+      var nameLabel = meta.name + (s.id === 'arya' && s.idx > 1 ? ' <span style="font-size:11px;color:var(--ink3)">· Sessione ' + s.idx + '</span>' : '');
+      var openHandler = (s.id === 'arya')
+        ? 'loadAryaSess(\'' + dateStr + '\',' + (s.idx || 1) + ')'
+        : 'goToSess(\'' + s.id + '\',\'' + dateStr + '\')';
+      html += '<div class="day-sess">';
+      html += '<div class="day-sess-dot ' + dotClass(s.id, s.sd) + '"></div>';
+      html += '<div class="day-sess-name">' + nameLabel + '<br><span style="font-size:11px;font-weight:400;color:var(--ink3)">' + meta.label + '</span></div>';
+      html += '<div style="text-align:right">';
+      if (extra) html += '<div class="day-sess-meta">' + extra + '</div>';
+      if (stars) html += '<div class="day-sess-stars">' + stars + '</div>';
+      html += '</div>';
+      html += '<button class="day-sess-goto" onclick="' + openHandler + '">Apri →</button>';
+      html += '</div>';
+    }
+  }
+  var restActive = isRestDay(dateStr);
+  html += '<button class="btn-small" style="margin-top:10px' + (restActive ? ';background:var(--ink);color:#fff;border-color:var(--ink)' : '') + '" onclick="toggleRestDay(\'' + dateStr + '\')">' + (restActive ? '✓ Giorno di riposo — rimuovi' : '🛌 Segna come giorno di riposo') + '</button>';
+  html += '</div>';
+  wrap.innerHTML = html;
+  wrap.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function goToSess(sid, dateStr) {
+  state['date_' + sid] = dateStr;
+  saveState();
+  currentTab = sid;
+  if (CAROL_IDS.indexOf(sid) !== -1) carolCurrentSub = sid;
+  renderTabs();
+  renderMain();
+}
+
+/* ── STORICO COMPLETO ────────────────────────────────────────── */
+function setStoricoFilter(f) {
+  storicoFilter = f;
+  renderStorico();
+}
+
+function renderStorico() {
+  var filterIds = ['arya','carol','s5']; // pulsanti filtro mostrati (le schede Carol s1-s4 sono raggruppate in 'carol')
+  var MONTHS = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+
+  // 1. raccogli tutte le sessioni "reali"
+  var all = [];
+  for (var k in state) {
+    var m = k.match(/^(s\d|arya)__(\d{4}-\d{2}-\d{2})(?:__(\d+))?$/);
+    if (!m) continue;
+    var sid = m[1], date = m[2], sd = state[k];
+    var idx = m[3] ? parseInt(m[3]) : 1;
+
+    var hasData = false;
+    if (sd.rating && sd.rating > 0) hasData = true;
+    if (sd.note && sd.note.trim()) hasData = true;
+    if (sid === 's5' && (sd.km || sd.pace)) hasData = true;
+    if (sid === 'arya' && (sd.program || sd.title || sd.category || sd.exercises || sd.duration)) hasData = true;
+    if (sd.done) { for (var dk in sd.done) { if (sd.done[dk]) { hasData = true; break; } } }
+    if (!hasData) continue;
+
+    if (storicoFilter === 'carol') { if (CAROL_IDS.indexOf(sid) === -1) continue; }
+    else if (storicoFilter !== 'all' && sid !== storicoFilter) continue;
+    all.push({sid: sid, date: date, sd: sd, idx: idx});
+  }
+
+  // 2. ordina per data desc, poi per idx desc all'interno dello stesso giorno
+  all.sort(function(a, b) {
+    if (a.date !== b.date) return b.date.localeCompare(a.date);
+    return (b.idx || 1) - (a.idx || 1);
+  });
+
+  // 3. raggruppa per mese (YYYY-MM)
+  var groups = {};
+  for (var i = 0; i < all.length; i++) {
+    var ym = all[i].date.slice(0, 7);
+    if (!groups[ym]) groups[ym] = [];
+    groups[ym].push(all[i]);
+  }
+  var groupKeys = Object.keys(groups).sort(function(a, b) { return b.localeCompare(a); });
+
+  // 4. HTML
+  var html = '';
+
+  // header
+  var filterLabel = storicoFilter === 'all' ? 'Tutte le sessioni' : (storicoFilter === 'carol' ? '📦 Archivio Carol' : SCHED_META[storicoFilter].name);
+  html += '<div class="session-bar">';
+  html += '<div class="session-info"><h2>Storico allenamenti</h2><p>' + all.length + ' session' + (all.length === 1 ? 'e' : 'i') + ' &middot; ' + filterLabel + '</p></div>';
+  html += '</div>';
+
+  // filtri
+  html += '<div class="run-type-row" style="margin-bottom:1.25rem">';
+  html += '<button class="run-type-btn' + (storicoFilter === 'all' ? ' active' : '') + '" onclick="setStoricoFilter(\'all\')">Tutte</button>';
+  for (var fi = 0; fi < filterIds.length; fi++) {
+    var f = filterIds[fi];
+    var fLabel = (f === 'carol') ? '📦 Archivio Carol' : SCHED_META[f].name;
+    html += '<button class="run-type-btn' + (storicoFilter === f ? ' active' : '') + '" onclick="setStoricoFilter(\'' + f + '\')">' + fLabel + '</button>';
+  }
+  html += '</div>';
+
+  // lista
+  if (!all.length) {
+    html += '<div class="hist-empty" style="text-align:center;padding:2rem 0">Nessuna sessione registrata' + (storicoFilter !== 'all' ? ' per questa scheda' : '') + '.</div>';
+  } else {
+    for (var gi = 0; gi < groupKeys.length; gi++) {
+      var gk = groupKeys[gi];
+      var gParts = gk.split('-');
+      var gMonth = MONTHS[parseInt(gParts[1]) - 1];
+      var gItems = groups[gk];
+
+      html += '<div class="hist-title" style="margin-top:' + (gi === 0 ? '0' : '1.5rem') + ';margin-bottom:.6rem">' + gMonth + ' ' + gParts[0] + ' &mdash; ' + gItems.length + ' session' + (gItems.length === 1 ? 'e' : 'i') + '</div>';
+
+      for (var ii = 0; ii < gItems.length; ii++) {
+        var it = gItems[ii];
+        var meta = SCHED_META[it.sid];
+        var p = it.date.split('-');
+        var fmt = p[2] + '/' + p[1];
+        var r = it.sd.rating || 0;
+        var rStr = r ? '&#9733;'.repeat(r) : '&mdash;';
+
+        // riepilogo
+        var summary = '';
+        if (it.sid === 's5') {
+          var parts2 = [];
+          if (it.sd.km) parts2.push(it.sd.km + ' km');
+          if (it.sd.pace) parts2.push(it.sd.pace + ' min/km');
+          if (it.sd.runType) parts2.push(it.sd.runType);
+          summary = parts2.join(' · ');
+        } else if (it.sid === 'arya') {
+          var partsA = [];
+          if (it.sd.program) partsA.push(it.sd.program);
+          if (it.sd.title) partsA.push(it.sd.title);
+          if (it.sd.category) partsA.push(it.sd.category);
+          if (it.sd.duration) partsA.push(it.sd.duration + ' min');
+          summary = partsA.join(' · ');
+        } else {
+          var blk = null;
+          for (var bi = 0; bi < SCHEDULES.length; bi++) { if (SCHEDULES[bi].id === it.sid) { blk = SCHEDULES[bi]; break; } }
+          if (blk && blk.blocks) {
+            var c = countDone(it.sid, it.date, blk.blocks);
+            summary = c.done + '/' + c.tot + ' esercizi · ' + blk.sub;
+          }
+        }
+
+        var notePreview = '';
+        if (it.sd.note) {
+          var nText = it.sd.note.trim();
+          notePreview = nText.length > 70 ? nText.slice(0, 70) + '…' : nText;
+        }
+
+        var clickHandler = (it.sid === 'arya')
+          ? 'loadAryaSess(\'' + it.date + '\',' + (it.idx || 1) + ')'
+          : 'goToSess(\'' + it.sid + '\',\'' + it.date + '\')';
+        var sessSuffix = (it.sid === 'arya' && it.idx > 1) ? ' <span style="font-size:11px;font-weight:400;color:var(--ink3)">· Sessione ' + it.idx + '</span>' : '';
+        html += '<div class="hist-item" style="cursor:pointer;align-items:flex-start" onclick="' + clickHandler + '">';
+        html += '<div style="display:flex;align-items:flex-start;gap:10px;flex:1;min-width:0">';
+        html += '<div class="cal-dot ' + dotClass(it.sid, it.sd) + '" style="margin-top:5px;flex-shrink:0"></div>';
+        html += '<div style="flex:1;min-width:0">';
+        html += '<div style="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap">';
+        html += '<span class="hist-date">' + fmt + '</span>';
+        html += '<span style="font-size:13px;font-weight:500;color:var(--ink)">' + meta.name + sessSuffix + '</span>';
+        html += '</div>';
+        if (summary) html += '<div class="hist-meta">' + esc(summary) + '</div>';
+        if (notePreview) html += '<div class="hist-meta" style="font-style:italic;margin-top:2px;color:var(--ink2)">&ldquo;' + esc(notePreview) + '&rdquo;</div>';
+        html += '</div>';
+        html += '</div>';
+        html += '<div class="hist-right"><span class="hist-stars">' + rStr + '</span></div>';
+        html += '</div>';
+      }
+    }
+  }
+
+  document.getElementById('main-content').innerHTML = html;
+}
+
+function renderTabs() {
+  var html = '<button class="tab' + (currentTab === 'home' ? ' active' : '') + '" onclick="switchTab(\'home\')">📅 Panoramica</button>';
+  html += '<button class="tab' + (currentTab === 'storico' ? ' active' : '') + '" onclick="switchTab(\'storico\')">📋 Storico</button>';
+  var carolInserted = false;
+  for (var i = 0; i < SCHEDULES.length; i++) {
+    var s = SCHEDULES[i];
+    if (CAROL_IDS.indexOf(s.id) !== -1) {
+      if (!carolInserted) {
+        var carolActive = CAROL_IDS.indexOf(currentTab) !== -1;
+        html += '<button class="tab' + (carolActive ? ' active' : '') + '" onclick="switchTab(carolCurrentSub)">📦 Archivio Carol</button>';
+        carolInserted = true;
+      }
+      continue;
+    }
+    html += '<button class="tab' + (s.id === currentTab ? ' active' : '') + '" onclick="switchTab(\'' + s.id + '\')">' + s.name + '</button>';
+  }
+  document.getElementById('tabs-wrap').innerHTML = html;
+}
+
+function switchTab(id) {
+  currentTab = id;
+  if (CAROL_IDS.indexOf(id) !== -1) carolCurrentSub = id;
+  renderTabs();
+  if (id === 'home') renderHome();
+  else if (id === 'storico') renderStorico();
+  else renderMain();
+}
+
+function getRunSess(date) {
+  var k = 's5__' + date;
+  if (!state[k]) state[k] = {km:'', pace:'', runType:'', rating:0, note:'', effort:'', durationExact:''};
+  return state[k];
+}
+
+function calcRunTime(km, pace) {
+  // pace format mm:ss
+  var km_n = parseFloat(km);
+  if (!km_n || !pace) return '—';
+  var parts = pace.split(':');
+  if (parts.length !== 2) return '—';
+  var mins = parseInt(parts[0]) + parseInt(parts[1]) / 60;
+  if (isNaN(mins) || mins <= 0) return '—';
+  var total = km_n * mins;
+  var h = Math.floor(total / 60);
+  var m = Math.floor(total % 60);
+  var s = Math.round((total - Math.floor(total)) * 60);
+  var str = '';
+  if (h > 0) str += h + 'h ';
+  str += m + '\' ';
+  if (s > 0) str += s + '"';
+  return str.trim() || '—';
+}
+
+function saveRun(field, val) {
+  var d = getDate('s5');
+  var rs = getRunSess(d);
+  rs[field] = val;
+  state['s5__' + d] = rs;
+  saveState();
+  // update computed fields live
+  var km = document.getElementById('run-km') ? document.getElementById('run-km').value : rs.km;
+  var pace = document.getElementById('run-pace') ? document.getElementById('run-pace').value : rs.pace;
+  var t = document.getElementById('run-time-val');
+  if (t) t.textContent = calcRunTime(km, pace);
+}
+
+function setRunType(type) {
+  saveRun('runType', type);
+  renderRunMain(null);
+}
+
+function setRunRating(n) {
+  var d = getDate('s5');
+  getRunSess(d).rating = n;
+  state['s5__' + d] = getRunSess(d);
+  saveState();
+  renderRunMain(null);
+}
+
+function renderRunMain(sch) {
+  if (!sch) {
+    for (var i = 0; i < SCHEDULES.length; i++) {
+      if (SCHEDULES[i].id === 's5') { sch = SCHEDULES[i]; break; }
+    }
+  }
+  var dt = getDate('s5');
+  var rs = getRunSess(dt);
+  var types = ['Corsa continua', 'Interval run', 'Fartlek', 'Camminata attiva'];
+
+  var html = '';
+  html += '<div class="session-bar">';
+  html += '<div class="session-info"><h2>Corsa outdoor</h2><p>Jolly settimanale</p></div>';
+  html += '<div class="date-wrap"><label>Data sessione</label>';
+  html += '<input type="date" id="sess-date" value="' + dt + '" onchange="onDateChange(this.value)"></div>';
+  html += '</div>';
+
+  // tipo di corsa
+  html += '<div class="run-type-row">';
+  for (var ti = 0; ti < types.length; ti++) {
+    var active = rs.runType === types[ti] ? ' active' : '';
+    html += '<button class="run-type-btn' + active + '" onclick="setRunType(\'' + types[ti] + '\')">' + types[ti] + '</button>';
+  }
+  html += '</div>';
+
+  // stat grid
+  html += '<div class="run-grid">';
+  html += '<div class="run-stat"><div class="run-stat-label">Distanza</div>';
+  html += '<input class="run-stat-input" id="run-km" type="number" step="0.1" min="0" placeholder="0.0" value="' + esc(rs.km || '') + '" oninput="saveRun(\'km\',this.value)">';
+  html += '<div class="run-stat-unit">km</div></div>';
+
+  html += '<div class="run-stat"><div class="run-stat-label">Ritmo medio</div>';
+  html += '<input class="run-stat-input" id="run-pace" type="text" placeholder="5:30" value="' + esc(rs.pace || '') + '" oninput="saveRun(\'pace\',this.value)">';
+  html += '<div class="run-stat-unit">min / km</div></div>';
+
+  html += '<div class="run-stat computed" style="grid-column:1/-1"><div class="run-stat-label">Tempo totale stimato</div>';
+  html += '<div class="run-stat-value" id="run-time-val">' + calcRunTime(rs.km, rs.pace) + '</div></div>';
+
+  html += '<div class="run-stat"><div class="run-stat-label">Tempo esatto (Strava)</div>';
+  html += '<input class="run-stat-input" id="run-duration-exact" type="text" placeholder="45:12" value="' + esc(rs.durationExact || '') + '" oninput="saveRun(\'durationExact\',this.value)">';
+  html += '<div class="run-stat-unit">tempo reale registrato</div></div>';
+
+  html += '<div class="run-stat"><div class="run-stat-label">Sforzo Relativo (Strava)</div>';
+  html += '<input class="run-stat-input" id="run-effort" type="number" step="1" min="0" placeholder="85" value="' + esc(rs.effort || '') + '" oninput="saveRun(\'effort\',this.value)">';
+  html += '<div class="run-stat-unit">Relative Effort</div></div>';
+  html += '</div>';
+
+  // feel card
+  var starHtml = '';
+  for (var si = 1; si <= 5; si++) {
+    starHtml += '<span class="star' + ((rs.rating || 0) >= si ? ' on' : '') + '" onclick="setRunRating(' + si + ')">&#9733;</span>';
+  }
+  html += '<div class="feel-card">';
+  html += '<div class="feel-title">Come è andata?</div>';
+  html += '<div class="stars-row"><span class="stars-label">Energia / sforzo:</span><div class="stars">' + starHtml + '</div></div>';
+  html += '<textarea class="note-area" id="session-note" placeholder="Come ti sei sentita, percorso, condizioni meteo..." oninput="saveRun(\'note\',this.value)">' + esc(rs.note || '') + '</textarea>';
+  html += '</div>';
+
+  html += '<div class="actions">';
+  html += '<button class="btn btn-primary" onclick="doSave()">Salva sessione</button>';
+  html += '<button class="btn btn-secondary" onclick="doExportJSON()">&#8595; Backup dati</button>';
+  html += '<button class="btn btn-secondary" onclick="document.getElementById(\'import-input\').click()">&#8593; Ripristina dati</button>';
+  html += '<input type="file" id="import-input" accept=".json" style="display:none" onchange="doImportJSON(this)">';
+  html += '<span class="saved-ok" id="saved-ok">&#10003; Salvato!</span>';
+  html += '</div>';
+
+  // history
+  html += '<div class="hist-section"><div class="hist-title">Sessioni precedenti</div>';
+  var entries = [];
+  for (var k in state) {
+    if (k.indexOf('s5__') === 0) entries.push({date: k.replace('s5__',''), sd: state[k]});
+  }
+  entries.sort(function(a,b){ return b.date.localeCompare(a.date); });
+  entries = entries.slice(0, 8);
+  if (!entries.length) {
+    html += '<div class="hist-empty">Nessuna corsa registrata ancora.</div>';
+  } else {
+    for (var ei = 0; ei < entries.length; ei++) {
+      var e = entries[ei];
+      var p = e.date.split('-');
+      var fmt = p[2] + '/' + p[1] + '/' + p[0];
+      var r = e.sd.rating || 0;
+      var rStr = r ? '&#9733;'.repeat(r) : '&mdash;';
+      var meta = [];
+      if (e.sd.km) meta.push(e.sd.km + ' km');
+      if (e.sd.pace) meta.push(e.sd.pace + ' min/km');
+      if (e.sd.runType) meta.push(e.sd.runType);
+      html += '<div class="hist-item">';
+      html += '<div><div class="hist-date">' + fmt + '</div>';
+      html += '<div class="hist-meta">' + (meta.length ? meta.join(' · ') : 'Nessun dato') + '</div></div>';
+      html += '<div class="hist-right"><span class="hist-stars">' + rStr + '</span></div>';
+      html += '</div>';
+    }
+  }
+  html += '</div>';
+
+  document.getElementById('main-content').innerHTML = html;
+}
+
+/* ── ARYA TRAINING ───────────────────────────────────────────── */
+// Modello chiavi:
+//   Sessione 1 del giorno: 'arya__YYYY-MM-DD'           (retro-compatibile)
+//   Sessione 2 del giorno: 'arya__YYYY-MM-DD__2'
+//   Sessione N del giorno: 'arya__YYYY-MM-DD__N'
+
+function aryaKey(date, idx) {
+  return (idx && idx > 1) ? ('arya__' + date + '__' + idx) : ('arya__' + date);
+}
+
+function aryaSessionHasData(sd) {
+  if (!sd) return false;
+  if (sd.program) return true;
+  if (sd.title) return true;
+  if (sd.category) return true;
+  if (sd.exercises) return true;
+  if (sd.duration) return true;
+  if (sd.rating && sd.rating > 0) return true;
+  if (sd.note && sd.note.trim()) return true;
+  return false;
+}
+
+// Ritorna gli indici delle sessioni ARYA esistenti nel giorno (es. [1] o [1,2] o [1,2,3]).
+function getAryaIndicesOfDay(date, includeIdx) {
+  var found = {};
+  for (var k in state) {
+    var m = k.match(/^arya__(\d{4}-\d{2}-\d{2})(?:__(\d+))?$/);
+    if (!m) continue;
+    if (m[1] !== date) continue;
+    var idx = m[2] ? parseInt(m[2]) : 1;
+    if (aryaSessionHasData(state[k])) found[idx] = true;
+    else if (idx === 1) found[1] = true; // mantieni lo slot 1 anche se vuoto (è il default)
+  }
+  if (includeIdx) found[includeIdx] = true; // la sessione appena creata resta visibile anche se ancora vuota
+  var arr = Object.keys(found).map(function(n){ return parseInt(n); }).sort(function(a,b){ return a-b; });
+  if (!arr.length) arr = [1];
+  return arr;
+}
+
+function getAryaSess(date, idx) {
+  if (!idx) idx = 1;
+  var k = aryaKey(date, idx);
+  if (!state[k]) state[k] = {program:'', title:'', category:'', duration:'', exercises:'', rating:0, note:''};
+  return state[k];
+}
+
+function getAryaDayNumber(date, idx) {
+  // Conta tutte le sessioni ARYA con dati reali da ARYA_START_DATE fino al punto (date, idx) — incluso.
+  if (date < ARYA_START_DATE) return null;
+  if (!idx) idx = 1;
+  var count = 0;
+  for (var k in state) {
+    var m = k.match(/^arya__(\d{4}-\d{2}-\d{2})(?:__(\d+))?$/);
+    if (!m) continue;
+    var d2 = m[1];
+    var i2 = m[2] ? parseInt(m[2]) : 1;
+    if (d2 < ARYA_START_DATE) continue;
+    if (d2 > date) continue;
+    if (d2 === date && i2 > idx) continue;
+    if (aryaSessionHasData(state[k])) count++;
+  }
+  // Se la sessione corrente è ancora vuota, mostra il prossimo numero
+  var currentSd = state[aryaKey(date, idx)];
+  if (!aryaSessionHasData(currentSd)) return count + 1;
+  return count;
+}
+
+function addAryaSession() {
+  var d = getDate('arya');
+  var indices = getAryaIndicesOfDay(d);
+  var nextIdx = Math.max.apply(null, indices) + 1;
+  aryaCurrentIdx = nextIdx;
+  getAryaSess(d, aryaCurrentIdx); // crea lo slot vuoto
+  saveLocalOnly();
+  renderAryaMain(null);
+}
+
+function selectAryaSession(idx) {
+  aryaCurrentIdx = idx;
+  renderAryaMain(null);
+}
+
+function saveArya(field, val) {
+  var d = getDate('arya');
+  var s = getAryaSess(d, aryaCurrentIdx);
+  s[field] = val;
+  state[aryaKey(d, aryaCurrentIdx)] = s;
+  saveLocalOnly();
+}
+
+function setAryaRating(n) {
+  var d = getDate('arya');
+  var s = getAryaSess(d, aryaCurrentIdx);
+  s.rating = n;
+  state[aryaKey(d, aryaCurrentIdx)] = s;
+  saveState();
+  renderAryaMain(null);
+}
+
+function renderAryaMain(sch) {
+  if (!sch) {
+    for (var i = 0; i < SCHEDULES.length; i++) {
+      if (SCHEDULES[i].id === 'arya') { sch = SCHEDULES[i]; break; }
+    }
+  }
+  var dt = getDate('arya');
+  // assicuro che aryaCurrentIdx sia valido per il giorno corrente
+  var dayIndices = getAryaIndicesOfDay(dt, aryaCurrentIdx);
+  if (dayIndices.indexOf(aryaCurrentIdx) === -1) aryaCurrentIdx = dayIndices[0];
+
+  var s = getAryaSess(dt, aryaCurrentIdx);
+  var dayNum = getAryaDayNumber(dt, aryaCurrentIdx);
+
+  var html = '';
+
+  // header sessione
+  var aryaTitle = s.program ? ('ARYA — ' + esc(s.program)) : 'ARYA';
+  html += '<div class="session-bar">';
+  html += '<div class="session-info"><h2>' + aryaTitle + (dayNum ? '<span class="arya-day-badge">Giorno ' + dayNum + '</span>' : '') + '</h2><p>Programma di Giulia Calcaterra</p></div>';
+  html += '<div class="date-wrap"><label>Data sessione</label>';
+  html += '<input type="date" id="sess-date" value="' + dt + '" onchange="onDateChange(this.value)"></div>';
+  html += '</div>';
+
+  // riga pillole sessioni del giorno (multiple sessioni stesso giorno)
+  html += '<div class="run-type-row" style="margin-bottom:10px;align-items:center">';
+  for (var pi = 0; pi < dayIndices.length; pi++) {
+    var di = dayIndices[pi];
+    var active = (di === aryaCurrentIdx) ? ' active' : '';
+    html += '<button class="run-type-btn' + active + '" onclick="selectAryaSession(' + di + ')">Sessione ' + di + '</button>';
+  }
+  html += '<button class="run-type-btn" style="border-style:dashed" onclick="addAryaSession()">+ Nuova sessione del giorno</button>';
+  html += '</div>';
+
+  // programma / raccolta ARYA
+  html += '<div class="arya-card">';
+  html += '<div class="arya-card-label">Programma / Raccolta ARYA</div>';
+  html += '<input type="text" id="arya-program" placeholder="es. Strong, Travel, Gambe..." value="' + esc(s.program || '') + '" oninput="saveArya(\'program\',this.value)">';
+  html += '</div>';
+
+  // titolo workout
+  html += '<div class="arya-card">';
+  html += '<div class="arya-card-label">Titolo workout</div>';
+  html += '<input type="text" id="arya-title" placeholder="es. Strong Settimana 1 - Lower Body" value="' + esc(s.title || '') + '" oninput="saveArya(\'title\',this.value)">';
+  html += '</div>';
+
+  // categoria + durata in riga compatta
+  html += '<div class="arya-card compact-row">';
+  html += '<div><div class="arya-card-label">Categoria</div>';
+  html += '<select id="arya-category" onchange="saveArya(\'category\',this.value)">';
+  html += '<option value=""' + (!s.category ? ' selected' : '') + '>— scegli —</option>';
+  for (var ci = 0; ci < ARYA_CATS.length; ci++) {
+    var c = ARYA_CATS[ci];
+    html += '<option value="' + esc(c) + '"' + (s.category === c ? ' selected' : '') + '>' + esc(c) + '</option>';
+  }
+  html += '</select></div>';
+  html += '<div><div class="arya-card-label">Durata (min)</div>';
+  html += '<input type="number" id="arya-duration" min="0" placeholder="45" value="' + esc(s.duration || '') + '" oninput="saveArya(\'duration\',this.value)"></div>';
+  html += '</div>';
+
+  // esercizi
+  html += '<div class="arya-card">';
+  html += '<div class="arya-card-label">Esercizi (a mano libera)</div>';
+  html += '<textarea id="arya-exercises" placeholder="Squat 3kg+3kg, affondi dietro banda media, hip thrust 5kg, plank 45...&#10;Una riga per esercizio o testo libero, come ti viene." oninput="saveArya(\'exercises\',this.value)">' + esc(s.exercises || '') + '</textarea>';
+  html += '</div>';
+
+  // feel card
+  var starHtml = '';
+  for (var si = 1; si <= 5; si++) {
+    starHtml += '<span class="star' + ((s.rating || 0) >= si ? ' on' : '') + '" onclick="setAryaRating(' + si + ')">&#9733;</span>';
+  }
+  html += '<div class="feel-card">';
+  html += '<div class="feel-title">Come è andata?</div>';
+  html += '<div class="stars-row"><span class="stars-label">Energia / sforzo:</span><div class="stars">' + starHtml + '</div></div>';
+  html += '<textarea class="note-area" id="session-note" placeholder="Sensazioni, energia, intensità percepita, cosa ricordare..." oninput="saveArya(\'note\',this.value)">' + esc(s.note || '') + '</textarea>';
+  html += '</div>';
+
+  // azioni
+  html += '<div class="actions">';
+  html += '<button class="btn btn-primary" onclick="doSave()">Salva sessione</button>';
+  html += '<button class="btn btn-secondary" onclick="doExportJSON()">&#8595; Backup dati</button>';
+  html += '<button class="btn btn-secondary" onclick="document.getElementById(\'import-input\').click()">&#8593; Ripristina dati</button>';
+  html += '<input type="file" id="import-input" accept=".json" style="display:none" onchange="doImportJSON(this)">';
+  html += '<span class="saved-ok" id="saved-ok">&#10003; Salvato!</span>';
+  html += '</div>';
+
+  // storico ARYA — include sessioni multiple per giorno
+  html += '<div class="hist-section"><div class="hist-title">Sessioni precedenti ARYA</div>';
+  var entries = [];
+  for (var k in state) {
+    var mm = k.match(/^arya__(\d{4}-\d{2}-\d{2})(?:__(\d+))?$/);
+    if (!mm) continue;
+    var sd2 = state[k];
+    if (!aryaSessionHasData(sd2)) continue;
+    entries.push({date: mm[1], idx: mm[2] ? parseInt(mm[2]) : 1, sd: sd2});
+  }
+  entries.sort(function(a,b){
+    if (a.date !== b.date) return b.date.localeCompare(a.date);
+    return b.idx - a.idx;
+  });
+  entries = entries.slice(0, 12);
+  if (!entries.length) {
+    html += '<div class="hist-empty">Nessuna sessione ARYA registrata ancora.</div>';
+  } else {
+    for (var ei = 0; ei < entries.length; ei++) {
+      var e = entries[ei];
+      var p = e.date.split('-');
+      var fmt = p[2] + '/' + p[1] + '/' + p[0];
+      var r = e.sd.rating || 0;
+      var rStr = r ? '&#9733;'.repeat(r) : '&mdash;';
+      var meta = [];
+      if (e.sd.program) meta.push(e.sd.program);
+      if (e.sd.title) meta.push(e.sd.title);
+      if (e.sd.category) meta.push(e.sd.category);
+      if (e.sd.duration) meta.push(e.sd.duration + ' min');
+      var sessLabel = (e.idx > 1) ? ' <span style="font-size:11px;color:var(--ink3)">· Sessione ' + e.idx + '</span>' : '';
+      html += '<div class="hist-item">';
+      html += '<div><div class="hist-date">' + fmt + sessLabel + '</div>';
+      html += '<div class="hist-meta">' + (meta.length ? esc(meta.join(' · ')) : 'Nessun dato') + '</div></div>';
+      html += '<div class="hist-right"><span class="hist-stars">' + rStr + '</span>';
+      html += '<button class="btn-small" onclick="loadAryaSess(\'' + e.date + '\',' + e.idx + ')">Vedi</button></div>';
+      html += '</div>';
+    }
+  }
+  html += '</div>';
+
+  document.getElementById('main-content').innerHTML = html;
+}
+
+function renderMain() {
+  var sch = null;
+  for (var i = 0; i < SCHEDULES.length; i++) {
+    if (SCHEDULES[i].id === currentTab) { sch = SCHEDULES[i]; break; }
+  }
+  if (!sch) return;
+  if (sch.runMode) { renderRunMain(sch); return; }
+  if (sch.aryaMode) { renderAryaMain(sch); return; }
+
+  var dt = getDate(currentTab);
+
+  // Se la scheda è stata appena salvata e resettata, usa una sessione vuota fittizia
+  var sd;
+  if (_freshTabs[currentTab]) {
+    sd = {done:{}, weights:{}, exnotes:{}, rating:0, note:''};
+  } else {
+    sd = getSess(currentTab, dt);
+  }
+
+  var c = countDone(currentTab, dt, sch.blocks);
+  // Se fresh, progress bar a zero
+  if (_freshTabs[currentTab]) c = {tot: c.tot, done: 0};
+  var pct = c.tot ? Math.round(c.done / c.tot * 100) : 0;
+
+  var html = '';
+
+  html += '<div class="session-bar">';
+  html += '<div class="session-info"><h2>' + sch.name + '</h2><p>' + sch.sub + '</p></div>';
+  html += '<div class="date-wrap"><label>Data sessione</label>';
+  html += '<input type="date" id="sess-date" value="' + dt + '" onchange="onDateChange(this.value)"></div>';
+  html += '</div>';
+
+  if (CAROL_IDS.indexOf(sch.id) !== -1) {
+    html += '<div class="run-type-row" style="margin-bottom:10px">';
+    for (var cci = 0; cci < CAROL_IDS.length; cci++) {
+      var cid = CAROL_IDS[cci];
+      var csch = null;
+      for (var csi = 0; csi < SCHEDULES.length; csi++) { if (SCHEDULES[csi].id === cid) { csch = SCHEDULES[csi]; break; } }
+      var cactive = (cid === sch.id) ? ' active' : '';
+      html += '<button class="run-type-btn' + cactive + '" onclick="switchTab(\'' + cid + '\')">' + csch.name + '</button>';
+    }
+    html += '</div>';
+  }
+
+  html += '<div class="prog-wrap">';
+  html += '<div class="prog-labels"><span>' + c.done + ' / ' + c.tot + ' esercizi</span><span>' + pct + '%</span></div>';
+  html += '<div class="prog-bar"><div class="prog-fill" style="width:' + pct + '%"></div></div>';
+  html += '</div>';
+
+  for (var bi = 0; bi < sch.blocks.length; bi++) {
+    var b = sch.blocks[bi];
+    html += '<div class="card">';
+    html += '<div class="card-head">';
+    if (b.sup) html += '<span class="card-badge">Superserie ' + b.sup + '</span>';
+    html += '<span class="card-title">' + b.title + '</span>';
+    if (b.note) html += '<span class="card-note">' + b.note + '</span>';
+    html += '</div>';
+
+    for (var ei = 0; ei < b.exercises.length; ei++) {
+      var e = b.exercises[ei];
+      var key = b.title + '_' + ei;
+      var isDone = !!(sd.done && sd.done[key]);
+      var w = (sd.weights && sd.weights[key]) ? esc(sd.weights[key]) : '';
+      var n = (sd.exnotes && sd.exnotes[key]) ? esc(sd.exnotes[key]) : '';
+      var btag = 'b' + bi + 'e' + ei;
+
+      html += '<div class="ex">';
+      html += '<div class="chk' + (isDone ? ' done' : '') + '" onclick="toggleDone(' + bi + ',' + ei + ')">';
+      html += '<div class="chk-icon"></div></div>';
+      html += '<div>';
+      html += '<div class="ex-name' + (isDone ? ' done' : '') + '">' + e.name + '</div>';
+      html += '<div class="ex-desc">' + e.meta;
+      if (e.kg) html += ' &nbsp;&middot;&nbsp; <b>' + e.kg + ' kg</b>';
+      html += '</div>';
+      html += '<div class="ex-fields">';
+      if (e.kg) {
+        html += '<div class="fld"><div class="fld-label">Peso usato</div>';
+        html += '<input type="text" id="w_' + btag + '" placeholder="es. 8 kg" value="' + w + '" oninput="saveW(' + bi + ',' + ei + ',this.value)"></div>';
+      }
+      html += '<div class="fld"><div class="fld-label">Note esercizio</div>';
+      html += '<input type="text" id="n_' + btag + '" placeholder="sensazioni, difficolta\'..." value="' + n + '" oninput="saveN(' + bi + ',' + ei + ',this.value)"></div>';
+      html += '</div></div></div>';
+    }
+    html += '</div>';
+  }
+
+  var starHtml = '';
+  for (var si = 1; si <= 5; si++) {
+    starHtml += '<span class="star' + ((sd.rating || 0) >= si ? ' on' : '') + '" onclick="setRating(' + si + ')">&#9733;</span>';
+  }
+  html += '<div class="feel-card">';
+  html += '<div class="feel-title">Come e\' andata?</div>';
+  html += '<div class="stars-row"><span class="stars-label">Energia / sforzo:</span><div class="stars">' + starHtml + '</div></div>';
+  html += '<textarea class="note-area" id="session-note" placeholder="Note generali: come ti sei sentita, cosa e\' migliorato, cosa ricordare..." oninput="saveGenNote(this.value)">' + esc(sd.note || '') + '</textarea>';
+  html += '</div>';
+
+  html += '<div class="actions">';
+  html += '<button class="btn btn-primary" onclick="doSave()">Salva sessione</button>';
+  html += '<button class="btn btn-secondary" onclick="doExportJSON()">&#8595; Backup dati</button>';
+  html += '<button class="btn btn-secondary" onclick="document.getElementById(\'import-input\').click()">&#8593; Ripristina dati</button>';
+  html += '<input type="file" id="import-input" accept=".json" style="display:none" onchange="doImportJSON(this)">';
+  html += '<span class="saved-ok" id="saved-ok">&#10003; Salvato!</span>';
+  html += '</div>';
+
+  html += renderHistory(sch);
+
+  html += '<div class="info-box" style="margin-top:1.25rem"><div class="info-box-title">Opzioni cardio (Plus)</div><ul>';
+  for (var ci = 0; ci < CARDIO.length; ci++) html += '<li>' + CARDIO[ci] + '</li>';
+  html += '</ul></div>';
+
+  html += '<div class="info-box"><div class="info-box-title">Consigli generali</div><ul>';
+  for (var ti = 0; ti < TIPS.length; ti++) html += '<li>' + TIPS[ti] + '</li>';
+  html += '</ul></div>';
+
+  document.getElementById('main-content').innerHTML = html;
+}
+
+function renderHistory(sch) {
+  var entries = [];
+  for (var k in state) {
+    if (k.indexOf(sch.id + '__') === 0) {
+      entries.push({date: k.replace(sch.id + '__', ''), sd: state[k]});
+    }
+  }
+  entries.sort(function(a, b) { return b.date.localeCompare(a.date); });
+  entries = entries.slice(0, 8);
+
+  var html = '<div class="hist-section"><div class="hist-title">Sessioni precedenti</div>';
+  if (!entries.length) {
+    html += '<div class="hist-empty">Nessuna sessione registrata ancora.</div>';
+  } else {
+    for (var i = 0; i < entries.length; i++) {
+      var e = entries[i];
+      var c = countDone(sch.id, e.date, sch.blocks);
+      var r = e.sd.rating || 0;
+      var rStr = r ? '&#9733;'.repeat(r) : '&mdash;';
+      var p = e.date.split('-');
+      var fmt = p[2] + '/' + p[1] + '/' + p[0];
+      var preview = e.sd.note ? e.sd.note.slice(0, 40) + (e.sd.note.length > 40 ? '...' : '') : '';
+      html += '<div class="hist-item">';
+      html += '<div><div class="hist-date">' + fmt + '</div>';
+      html += '<div class="hist-meta">' + c.done + '/' + c.tot + ' esercizi' + (preview ? ' &middot; ' + esc(preview) : '') + '</div></div>';
+      html += '<div class="hist-right"><span class="hist-stars">' + rStr + '</span>';
+      html += '<button class="btn-small" onclick="loadSess(\'' + e.date + '\')">Vedi</button></div>';
+      html += '</div>';
+    }
+  }
+  return html + '</div>';
+}
+
+function onDateChange(val) {
+  state['date_' + currentTab] = val;
+  if (currentTab === 'arya') aryaCurrentIdx = 1; // ogni nuovo giorno reparte da slot 1
+  saveState();
+  renderMain();
+}
+
+function loadSess(date) {
+  state['date_' + currentTab] = date;
+  saveState();
+  renderMain();
+}
+
+function loadAryaSess(date, idx) {
+  state['date_arya'] = date;
+  aryaCurrentIdx = idx || 1;
+  saveLocalOnly();
+  currentTab = 'arya';
+  renderTabs();
+  renderAryaMain(null);
+}
+
+function toggleDone(bi, ei) {
+  _freshTabs[currentTab] = false; // prima interazione: esci dalla modalità "fresh"
+  var sch = null;
+  for (var i = 0; i < SCHEDULES.length; i++) {
+    if (SCHEDULES[i].id === currentTab) { sch = SCHEDULES[i]; break; }
+  }
+  var b = sch.blocks[bi];
+  var key = b.title + '_' + ei;
+  var dt = getDate(currentTab);
+  var sd = getSess(currentTab, dt);
+  if (!sd.done) sd.done = {};
+  sd.done[key] = !sd.done[key];
+  saveLocalOnly();
+  renderMain();
+}
+
+function saveW(bi, ei, val) {
+  _freshTabs[currentTab] = false;
+  var sch = null;
+  for (var i = 0; i < SCHEDULES.length; i++) {
+    if (SCHEDULES[i].id === currentTab) { sch = SCHEDULES[i]; break; }
+  }
+  var b = sch.blocks[bi];
+  var key = b.title + '_' + ei;
+  var sd = getSess(currentTab, getDate(currentTab));
+  if (!sd.weights) sd.weights = {};
+  sd.weights[key] = val;
+  saveLocalOnly();
+}
+
+function saveN(bi, ei, val) {
+  _freshTabs[currentTab] = false;
+  var sch = null;
+  for (var i = 0; i < SCHEDULES.length; i++) {
+    if (SCHEDULES[i].id === currentTab) { sch = SCHEDULES[i]; break; }
+  }
+  var b = sch.blocks[bi];
+  var key = b.title + '_' + ei;
+  var sd = getSess(currentTab, getDate(currentTab));
+  if (!sd.exnotes) sd.exnotes = {};
+  sd.exnotes[key] = val;
+  saveLocalOnly();
+}
+
+function saveGenNote(val) {
+  _freshTabs[currentTab] = false;
+  getSess(currentTab, getDate(currentTab)).note = val;
+  saveLocalOnly();
+}
+
+function setRating(n) {
+  getSess(currentTab, getDate(currentTab)).rating = n;
+  saveState();
+  renderMain();
+}
+
+function doSave() {
+  // Raccoglie i valori testuali live dal DOM prima di salvare
+  var sch = null;
+  for (var i = 0; i < SCHEDULES.length; i++) {
+    if (SCHEDULES[i].id === currentTab) { sch = SCHEDULES[i]; break; }
+  }
+  if (sch && !sch.runMode && !sch.aryaMode) {
+    var dt = getDate(currentTab);
+    var sd = getSess(currentTab, dt);
+    for (var bi = 0; bi < sch.blocks.length; bi++) {
+      var b = sch.blocks[bi];
+      for (var ei = 0; ei < b.exercises.length; ei++) {
+        var btag = 'b' + bi + 'e' + ei;
+        var wEl = document.getElementById('w_' + btag);
+        var nEl = document.getElementById('n_' + btag);
+        var key = b.title + '_' + ei;
+        if (wEl) { if (!sd.weights) sd.weights = {}; sd.weights[key] = wEl.value; }
+        if (nEl) { if (!sd.exnotes) sd.exnotes = {}; sd.exnotes[key] = nEl.value; }
+      }
+    }
+    var noteEl = document.getElementById('session-note');
+    if (noteEl) sd.note = noteEl.value;
+  }
+
+  saveState(); // salva sul dispositivo e nel database
+
+  var el = document.getElementById('saved-ok');
+  if (el) {
+    el.classList.add('show');
+    setTimeout(function() { el.classList.remove('show'); }, 2000);
+  }
+
+  // ── RESET SCHEDA ──
+  // Segna questa scheda come "fresca": il prossimo render mostrerà form vuoto.
+  // I dati salvati restano nel database e nello storico.
+  // NB: solo per le schede Carol (s1-s4); ARYA e Corsa restano visibili dopo il save.
+  if (sch && !sch.runMode && !sch.aryaMode) {
+    setTimeout(function() {
+      _freshTabs[currentTab] = true;          // flag: mostra form vuoto
+      delete state['date_' + currentTab];     // prossima apertura = data odierna
+      saveLocalOnly();
+      renderMain();
+    }, 800);
+  }
+}
+
+function doExport() {
+  var lines = ['SCHEDA ALLENAMENTO - GIORGIA - GENNAIO', 'Carol Enrico', '', ''];
+  for (var si = 0; si < SCHEDULES.length; si++) {
+    var sch = SCHEDULES[si];
+    var sessKeys = [];
+    for (var k in state) {
+      if (k.indexOf(sch.id + '__') === 0) sessKeys.push(k);
+    }
+    if (!sessKeys.length) continue;
+    lines.push('=== ' + sch.name.toUpperCase() + ' - ' + sch.sub.toUpperCase() + ' ===');
+    sessKeys.sort();
+    for (var ki = 0; ki < sessKeys.length; ki++) {
+      var date = sessKeys[ki].replace(sch.id + '__', '');
+      var sd = state[sessKeys[ki]];
+      var p = date.split('-');
+      lines.push('');
+      lines.push('Data: ' + p[2] + '/' + p[1] + '/' + p[0]);
+      for (var bi = 0; bi < sch.blocks.length; bi++) {
+        var b = sch.blocks[bi];
+        lines.push('  ' + b.title + ':');
+        for (var ei = 0; ei < b.exercises.length; ei++) {
+          var e = b.exercises[ei];
+          var key = b.title + '_' + ei;
+          var done = (sd.done && sd.done[key]) ? '[X]' : '[ ]';
+          var w = (sd.weights && sd.weights[key]) ? ' - ' + sd.weights[key] : '';
+          var n = (sd.exnotes && sd.exnotes[key]) ? ' -> ' + sd.exnotes[key] : '';
+          lines.push('    ' + done + ' ' + e.name + ' (' + e.meta.replace(/&middot;/g,'·').replace(/&mdash;/g,'—') + ')' + w + n);
+        }
+      }
+      if (sd.rating) lines.push('  Energia: ' + '★'.repeat(sd.rating));
+      if (sd.note) lines.push('  Note: ' + sd.note);
+    }
+    lines.push('');
+  }
+  var content = lines.join('\n');
+  var blob = new Blob([content], {type: 'text/plain;charset=utf-8'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'allenamento_giorgia_' + todayStr() + '.txt';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function doExportJSON() {
+  var blob = new Blob([JSON.stringify(state, null, 2)], {type: 'application/json;charset=utf-8'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'giorgia_backup_' + todayStr() + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function doImportJSON(input) {
+  var file = input.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var imported = JSON.parse(e.target.result);
+      // Merge: i dati importati sovrascrivono quelli esistenti, il resto rimane
+      for (var k in imported) { state[k] = imported[k]; }
+      saveState();
+      renderMain();
+      var el = document.getElementById('saved-ok');
+      if (el) { el.textContent = '✓ Dati ripristinati!'; el.classList.add('show'); setTimeout(function(){ el.classList.remove('show'); el.textContent = '✓ Salvato!'; }, 2500); }
+    } catch(err) {
+      alert('File non valido. Assicurati di selezionare un backup JSON generato da questa scheda.');
+    }
+    input.value = '';
+  };
+  reader.readAsText(file);
+}
+
+loadState();   // render immediato dai dati del dispositivo, poi sincronizza con il database
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function(e) { console.warn('TRAIN: niente modalità offline', e); });
+renderTabs();
+renderHome();
+</script>
+</body>
+</html>
