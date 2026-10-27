@@ -1,6 +1,6 @@
 /* TRAIN · service worker: tiene una copia dell'app sul telefono, così si apre anche senza rete.
    I dati non passano da qui: li gestisce la pagina. Quando cambia l'app, alzare VERSION. */
-const VERSION="train-v4";
+const VERSION="train-v5";
 const CORE=["./","index.html","manifest.webmanifest","icons/apple-touch-icon.png","icons/icon-192.png","icons/icon-512.png","icons/icon-maskable-512.png"];
 
 self.addEventListener("install",e=>{e.waitUntil(caches.open(VERSION).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting()));});
@@ -11,9 +11,10 @@ function withTimeout(p,ms){return Promise.race([p,new Promise((_,rej)=>setTimeou
 self.addEventListener("fetch",e=>{
   const req=e.request,url=new URL(req.url);
   if(req.method!=="GET"||url.hostname.endsWith("supabase.co"))return;
-  /* l'app stessa: prima la rete (per avere sempre l'ultima versione), la copia se la rete manca o è lenta */
+  /* l'app stessa: prima la rete (per avere sempre l'ultima versione), la copia se la rete manca o è lenta.
+     cache:"no-cache" chiede sempre a GitHub se c'è una versione nuova, invece di riusare per 10 minuti quella del browser */
   if(url.origin===location.origin){
-    e.respondWith(withTimeout(fetch(req),3000).then(res=>{const copy=res.clone();caches.open(VERSION).then(c=>c.put(req,copy));return res;})
+    e.respondWith(withTimeout(fetch(req,{cache:"no-cache"}),3000).then(res=>{const copy=res.clone();caches.open(VERSION).then(c=>c.put(req,copy));return res;})
       .catch(()=>caches.match(req,{ignoreSearch:true}).then(r=>r||caches.match("index.html"))));
     return;
   }
