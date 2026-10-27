@@ -23,8 +23,11 @@
   --bg:#111111; --surface:#1C1C1C; --surface2:#262626; --line:#303030;
   --ink:#F3F0E8; --ink2:#C9C5BC; --ink3:#928E86; --on:#0D0D0D;
   --cream:#F3F0E8;
-  /* un colore per tipo di allenamento */
-  --c-strong:#B9A6F5; --c-fire:#FF6B57; --c-tonifica:#F59AC6; --c-gambe:#FF9A3D; --c-carol:#F2C94C; --c-run:#B8E06A;
+  /* un colore per tipo di sessione: allenamento ARYA, mobility/drenaggio, corsa, archivio Carol.
+     Il programma ARYA non ha un colore: si legge dalla sigla (AOF, T&D...) */
+  --c-arya:#FF5240; --c-soft:#F59AC6; --c-run:#B8E06A; --c-archive:#8A867F;
+  /* accenti dell'interfaccia */
+  --c-strong:#B9A6F5; --c-fire:#FF6B57; --c-carol:#F2C94C;
   --star:#F2C94C;
   /* nomi della versione precedente, ancora usati dentro il codice */
   --coral:var(--c-fire); --coral-light:var(--line); --coral-pale:var(--surface2);
@@ -46,9 +49,9 @@ button,input,select,textarea{font-family:var(--font)}
 .header h1 strong{font-weight:850;color:var(--c-strong)}
 .header-pills{display:flex;gap:6px;margin-top:.9rem;flex-wrap:wrap}
 .pill{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--on);border-radius:999px;padding:5px 11px}
-.header-pills .pill:nth-child(1){background:var(--c-strong)}
+.header-pills .pill:nth-child(1){background:var(--c-arya)}
 .header-pills .pill:nth-child(2){background:var(--c-run)}
-.header-pills .pill:nth-child(3){background:var(--c-carol)}
+.header-pills .pill:nth-child(3){background:var(--c-soft)}
 
 /* barra delle schede in basso, a pillola */
 .tabs-wrap{position:fixed;left:10px;right:10px;bottom:calc(10px + var(--safe-b));z-index:20;max-width:700px;margin:0 auto;display:flex;gap:3px;padding:5px;border-radius:999px;background:rgba(28,28,28,.92);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border:1px solid var(--line);overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
@@ -189,34 +192,37 @@ textarea.note-area:focus{outline:none;border-color:var(--cream)}
 .cal-dots{display:flex;gap:3px;flex-wrap:wrap;justify-content:center;margin-top:2px}
 .cal-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 .cal-rest-badge{position:static;order:3;margin-top:1px;width:15px;height:15px;border-radius:50%;background:var(--surface2);color:var(--ink2);font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center;line-height:1}
-/* il tassello prende il colore della sessione del giorno; i pallini diventano scuri per contare le sessioni */
-.cal-day:not(.other-month):has(.dot-arya){background:var(--c-strong)}
-.cal-day:not(.other-month):has(.dot-carol),.cal-day:not(.other-month):has(.dot-s1),.cal-day:not(.other-month):has(.dot-s2),.cal-day:not(.other-month):has(.dot-s3),.cal-day:not(.other-month):has(.dot-s4){background:var(--c-carol)}
-.cal-day:not(.other-month):has(.dot-arya-gambe){background:var(--c-gambe)}
-.cal-day:not(.other-month):has(.dot-arya-tonifica){background:var(--c-tonifica)}
-.cal-day:not(.other-month):has(.dot-arya-fire){background:var(--c-fire)}
+/* il tassello prende il colore della sessione del giorno; i pallini diventano scuri per contare le sessioni.
+   Se nello stesso giorno ci sono più tipi vince l'ultima regola: archivio < mobility < allenamento < corsa */
+.cal-day:not(.other-month):has(.dot-carol){background:var(--c-archive)}
+.cal-day:not(.other-month):has(.dot-soft){background:var(--c-soft)}
+.cal-day:not(.other-month):has(.dot-arya){background:var(--c-arya)}
 .cal-day:not(.other-month):has(.dot-s5){background:var(--c-run)}
 .cal-day:not(.other-month):has(.cal-dot) .cal-num{color:var(--on)}
 .cal-day:not(.other-month):has(.cal-dot) .cal-dot{background:var(--on)!important;opacity:.55}
 .cal-day:not(.other-month):has(.cal-dot) .cal-rest-badge{background:var(--on);color:var(--ink)}
+/* sigla del programma ARYA dentro il tassello (AOF, T&D...) */
+.cal-tag{font-stretch:75%;font-size:9px;font-weight:850;letter-spacing:.02em;line-height:1;color:var(--ink2);white-space:nowrap}
+.cal-day:not(.other-month):has(.cal-dot) .cal-tag{color:var(--on)}
+.cal-day.other-month .cal-tag{color:var(--surface2)}
 
-/* i colori dei tipi di allenamento (pallini, legenda, Storico) */
-.dot-arya{background:var(--c-strong)}
-.dot-arya-fire{background:var(--c-fire)}
-.dot-arya-tonifica{background:var(--c-tonifica)}
-.dot-arya-gambe{background:var(--c-gambe)}
-.dot-carol,.dot-s1,.dot-s2,.dot-s3,.dot-s4{background:var(--c-carol)}
+/* i colori dei tipi di sessione (pallini, legenda, Storico) */
+.dot-arya{background:var(--c-arya)}
+.dot-soft{background:var(--c-soft)}
+.dot-carol{background:var(--c-archive)}
 .dot-s5{background:var(--c-run)}
 
 /* nello Storico e nel giorno scelto, ogni sessione diventa una pillola del suo colore */
 .hist-item:has(.cal-dot),.day-sess:has(.day-sess-dot){color:var(--on)}
-.hist-item:has(.dot-arya),.day-sess:has(.dot-arya){background:var(--c-strong)}
-.hist-item:has(.dot-carol),.hist-item:has(.dot-s1),.hist-item:has(.dot-s2),.hist-item:has(.dot-s3),.hist-item:has(.dot-s4),
-.day-sess:has(.dot-carol),.day-sess:has(.dot-s1),.day-sess:has(.dot-s2),.day-sess:has(.dot-s3),.day-sess:has(.dot-s4){background:var(--c-carol)}
-.hist-item:has(.dot-arya-gambe),.day-sess:has(.dot-arya-gambe){background:var(--c-gambe)}
-.hist-item:has(.dot-arya-tonifica),.day-sess:has(.dot-arya-tonifica){background:var(--c-tonifica)}
-.hist-item:has(.dot-arya-fire),.day-sess:has(.dot-arya-fire){background:var(--c-fire)}
+.hist-item:has(.dot-arya),.day-sess:has(.dot-arya){background:var(--c-arya)}
+.hist-item:has(.dot-soft),.day-sess:has(.dot-soft){background:var(--c-soft)}
+.hist-item:has(.dot-carol),.day-sess:has(.dot-carol){background:var(--c-archive)}
 .hist-item:has(.dot-s5),.day-sess:has(.dot-s5){background:var(--c-run)}
+/* sigla del programma accanto al nome della sessione */
+.sess-tag{display:inline-block;font-size:10px;font-weight:850;letter-spacing:.04em;padding:2px 7px;border-radius:999px;background:rgba(13,13,13,.16);margin-left:6px;vertical-align:1px}
+/* link discreto all'archivio, in fondo alla Panoramica */
+.archive-link{display:block;margin:1.6rem auto 0;background:none;border:0;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);cursor:pointer;padding:10px 14px}
+.archive-link:hover{color:var(--ink)}
 .hist-item:has(.cal-dot) .cal-dot,.day-sess .day-sess-dot{display:none}
 .hist-item:has(.cal-dot) .hist-meta,.hist-item:has(.cal-dot) .hist-stars,.day-sess .day-sess-meta,.day-sess .day-sess-stars{color:var(--on);opacity:.75}
 .hist-item:has(.cal-dot) *:not(.btn-small),.day-sess:has(.day-sess-dot) *:not(.day-sess-goto){color:var(--on)!important}
@@ -231,7 +237,7 @@ textarea.note-area:focus{outline:none;border-color:var(--cream)}
 .arya-card textarea{font-size:15px;resize:vertical;min-height:84px;line-height:1.5}
 .arya-card.compact-row{display:flex;gap:1rem;align-items:center}
 .arya-card.compact-row > div{flex:1}
-.arya-day-badge{display:inline-block;background:var(--c-strong);color:var(--on);font-family:var(--font);font-stretch:100%;font-size:11px;font-weight:800;letter-spacing:.04em;padding:4px 10px;border-radius:999px;margin-left:8px;vertical-align:middle;text-transform:none}
+.arya-day-badge{display:inline-block;background:var(--c-arya);color:var(--on);font-family:var(--font);font-stretch:100%;font-size:11px;font-weight:800;letter-spacing:.04em;padding:4px 10px;border-radius:999px;margin-left:8px;vertical-align:middle;text-transform:none}
 
 /* il giorno scelto nel calendario */
 .day-detail{background:var(--surface);border:0;border-radius:22px;padding:1.1rem;margin-bottom:10px}
@@ -261,7 +267,7 @@ textarea.note-area:focus{outline:none;border-color:var(--cream)}
   <div class="header-pills">
     <span class="pill">ARYA Training</span>
     <span class="pill">Corsa outdoor</span>
-    <span class="pill">Archivio Carol</span>
+    <span class="pill">Mobility &amp; drenaggio</span>
   </div>
   <div id="sync-pill" class="sync-pill offline"><div class="sync-dot"></div><span>Connessione...</span>&nbsp;&nbsp;<span onclick="syncNow()" style="cursor:pointer;text-decoration:underline;opacity:.7">↺ Sincronizza</span></div>
 </div>
@@ -611,22 +617,47 @@ var SCHED_META = {
   s5: {name:'Corsa 🏃', color:'dot-s5', label:'Outdoor'}
 };
 
+// Programmi ARYA: si riconoscono dal testo del campo "Programma" e compaiono come sigla (non come colore)
 var ARYA_PROGRAMS = [
-  {key:'fire',     match:'fire',     cls:'dot-arya-fire',     name:'ARYA On Fire'},
-  {key:'tonifica', match:'tonifica', cls:'dot-arya-tonifica', name:'ARYA Tonifica & Drena'},
-  {key:'gambe',    match:'gambe',    cls:'dot-arya-gambe',    name:'ARYA Gambe'}
+  {match:'fire',     tag:'AOF', name:'On Fire'},
+  {match:'tonifica', tag:'T&D', name:'Tonifica & Drena'},
+  {match:'strong',   tag:'AS',  name:'Strong'},
+  {match:'gambe',    tag:'AG',  name:'Gambe'}
 ];
+// Categorie che non sono "veri e propri allenamenti": la sessione diventa rosa
+var SOFT_CATS = ['Mobility / Stretching','Drenaggio / Linfodrenante','Yoga','Postural'];
+
+function aryaTag(sd) {
+  var txt = ((sd && sd.program) || '').toLowerCase();
+  for (var i = 0; i < ARYA_PROGRAMS.length; i++) {
+    if (txt.indexOf(ARYA_PROGRAMS[i].match) !== -1) return ARYA_PROGRAMS[i].tag;
+  }
+  return '';
+}
 
 function dotClass(id, sd) {
-  if (id === 'arya') {
-    var txt = ((sd && sd.program) || '').toLowerCase();
-    for (var i = 0; i < ARYA_PROGRAMS.length; i++) {
-      if (txt.indexOf(ARYA_PROGRAMS[i].match) !== -1) return ARYA_PROGRAMS[i].cls;
-    }
-    return 'dot-arya';
-  }
+  if (id === 'arya') return (sd && SOFT_CATS.indexOf(sd.category) !== -1) ? 'dot-soft' : 'dot-arya';
   if (CAROL_IDS.indexOf(id) !== -1) return 'dot-carol';
   return SCHED_META[id].color;
+}
+
+// sigle dei programmi ARYA del giorno, senza doppioni, da mettere nel tassello del calendario
+function calTags(sessions) {
+  var tags = [];
+  for (var i = 0; i < sessions.length; i++) {
+    if (sessions[i].id !== 'arya') continue;
+    var t = aryaTag(sessions[i].sd);
+    if (t && tags.indexOf(t) === -1) tags.push(t);
+  }
+  var html = '';
+  for (var j = 0; j < tags.length; j++) html += '<span class="cal-tag">' + esc(tags[j]) + '</span>';
+  return html;
+}
+
+// nome della sessione con la sigla del programma ARYA accanto
+function sessName(id, sd) {
+  var t = (id === 'arya') ? aryaTag(sd) : '';
+  return SCHED_META[id].name + (t ? '<span class="sess-tag">' + esc(t) + '</span>' : '');
 }
 
 function calPrevMonth() { calMonth--; if(calMonth<0){calMonth=11;calYear--;} renderHome(); }
@@ -747,6 +778,7 @@ function renderHome() {
       html += '<div class="cal-dots">';
       for (var pi2=0;pi2<prevSess.length;pi2++) html += '<div class="cal-dot ' + dotClass(prevSess[pi2].id, prevSess[pi2].sd) + '"></div>';
       html += '</div>';
+      html += calTags(prevSess);
     }
     if (isRestDay(prevStr)) html += '<div class="cal-rest-badge">R</div>';
     html += '</div>';
@@ -763,6 +795,7 @@ function renderHome() {
       html += '<div class="cal-dots">';
       for (var si=0;si<sessions.length;si++) html += '<div class="cal-dot ' + dotClass(sessions[si].id, sessions[si].sd) + '"></div>';
       html += '</div>';
+      html += calTags(sessions);
     }
     if (isRestDay(dateStr)) html += '<div class="cal-rest-badge">R</div>';
     html += '</div>';
@@ -783,20 +816,29 @@ function renderHome() {
 
   html += '</div>'; // cal-grid
 
-  // legend
-  html += '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:1.25rem">';
-  var legendItems = [{cls:'dot-arya', name:'🏋️ ARYA Strong / altro'}];
-  for (var lp=0;lp<ARYA_PROGRAMS.length;lp++) legendItems.push({cls:ARYA_PROGRAMS[lp].cls, name:'🏋️ ' + ARYA_PROGRAMS[lp].name});
-  legendItems.push({cls:'dot-carol', name:'📦 Archivio Carol'});
-  legendItems.push({cls:'dot-s5', name:SCHED_META.s5.name});
+  // legend: i colori dicono il tipo di sessione, le sigle il programma ARYA
+  html += '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:.5rem">';
+  var legendItems = [
+    {cls:'dot-arya', name:'Allenamento ARYA'},
+    {cls:'dot-soft', name:'Mobility / drenaggio'},
+    {cls:'dot-s5',   name:'Corsa'}
+  ];
+  // le vecchie sessioni Carol compaiono in legenda solo nei mesi in cui ci sono
+  if (html.indexOf('cal-dot dot-carol') !== -1) legendItems.push({cls:'dot-carol', name:'Archivio Carol'});
   for (var li=0;li<legendItems.length;li++) {
     html += '<div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink3)">';
     html += '<div class="cal-dot ' + legendItems[li].cls + '"></div>' + legendItems[li].name + '</div>';
   }
   html += '</div>';
+  var tagLegend = [];
+  for (var lp=0;lp<ARYA_PROGRAMS.length;lp++) tagLegend.push('<b style="color:var(--ink2)">' + esc(ARYA_PROGRAMS[lp].tag) + '</b> ' + ARYA_PROGRAMS[lp].name);
+  html += '<div style="font-size:11px;color:var(--ink3);margin-bottom:1.25rem">' + tagLegend.join(' &middot; ') + '</div>';
 
   // day detail placeholder
   html += '<div id="day-detail-wrap"></div>';
+
+  // l'archivio Carol non sta più nella barra in basso: si apre da qui
+  html += '<button class="archive-link" onclick="switchTab(carolCurrentSub)">📦 Archivio</button>';
 
   document.getElementById('main-content').innerHTML = html;
 }
@@ -835,13 +877,14 @@ function showDayDetail(dateStr) {
           extra = c.done + '/' + c.tot + ' esercizi';
         }
       }
-      var nameLabel = meta.name + (s.id === 'arya' && s.idx > 1 ? ' <span style="font-size:11px;color:var(--ink3)">· Sessione ' + s.idx + '</span>' : '');
+      var nameLabel = sessName(s.id, s.sd) + (s.id === 'arya' && s.idx > 1 ? ' <span style="font-size:11px;color:var(--ink3)">· Sessione ' + s.idx + '</span>' : '');
       var openHandler = (s.id === 'arya')
         ? 'loadAryaSess(\'' + dateStr + '\',' + (s.idx || 1) + ')'
         : 'goToSess(\'' + s.id + '\',\'' + dateStr + '\')';
       html += '<div class="day-sess">';
       html += '<div class="day-sess-dot ' + dotClass(s.id, s.sd) + '"></div>';
-      html += '<div class="day-sess-name">' + nameLabel + '<br><span style="font-size:11px;font-weight:400;color:var(--ink3)">' + meta.label + '</span></div>';
+      // per ARYA il programma lo dice già la sigla: niente sottotitolo fisso
+      html += '<div class="day-sess-name">' + nameLabel + (s.id === 'arya' ? '' : '<br><span style="font-size:11px;font-weight:400;color:var(--ink3)">' + meta.label + '</span>') + '</div>';
       html += '<div style="text-align:right">';
       if (extra) html += '<div class="day-sess-meta">' + extra + '</div>';
       if (stars) html += '<div class="day-sess-stars">' + stars + '</div>';
@@ -879,7 +922,7 @@ function setStoricoFilter(f) {
 }
 
 function renderStorico() {
-  var filterIds = ['arya','carol','s5']; // pulsanti filtro mostrati (le schede Carol s1-s4 sono raggruppate in 'carol')
+  var filterIds = ['arya','s5']; // pulsanti filtro mostrati (le sessioni Carol restano in "Tutte", senza filtro proprio)
   var MONTHS = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
 
   // 1. raccogli tutte le sessioni "reali"
@@ -997,7 +1040,7 @@ function renderStorico() {
         html += '<div style="flex:1;min-width:0">';
         html += '<div style="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap">';
         html += '<span class="hist-date">' + fmt + '</span>';
-        html += '<span style="font-size:13px;font-weight:500;color:var(--ink)">' + meta.name + sessSuffix + '</span>';
+        html += '<span style="font-size:13px;font-weight:500;color:var(--ink)">' + sessName(it.sid, it.sd) + sessSuffix + '</span>';
         html += '</div>';
         if (summary) html += '<div class="hist-meta">' + esc(summary) + '</div>';
         if (notePreview) html += '<div class="hist-meta" style="font-style:italic;margin-top:2px;color:var(--ink2)">&ldquo;' + esc(notePreview) + '&rdquo;</div>';
@@ -1015,17 +1058,10 @@ function renderStorico() {
 function renderTabs() {
   var html = '<button class="tab' + (currentTab === 'home' ? ' active' : '') + '" onclick="switchTab(\'home\')">📅 Panoramica</button>';
   html += '<button class="tab' + (currentTab === 'storico' ? ' active' : '') + '" onclick="switchTab(\'storico\')">📋 Storico</button>';
-  var carolInserted = false;
   for (var i = 0; i < SCHEDULES.length; i++) {
     var s = SCHEDULES[i];
-    if (CAROL_IDS.indexOf(s.id) !== -1) {
-      if (!carolInserted) {
-        var carolActive = CAROL_IDS.indexOf(currentTab) !== -1;
-        html += '<button class="tab' + (carolActive ? ' active' : '') + '" onclick="switchTab(carolCurrentSub)">📦 Archivio Carol</button>';
-        carolInserted = true;
-      }
-      continue;
-    }
+    // le schede Carol non stanno nella barra: si aprono dal link "Archivio" in fondo alla Panoramica
+    if (CAROL_IDS.indexOf(s.id) !== -1) continue;
     html += '<button class="tab' + (s.id === currentTab ? ' active' : '') + '" onclick="switchTab(\'' + s.id + '\')">' + s.name + '</button>';
   }
   document.getElementById('tabs-wrap').innerHTML = html;
