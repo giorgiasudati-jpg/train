@@ -205,6 +205,12 @@ textarea.note-area:focus{outline:none;border-color:var(--cream)}
 .cal-tag{font-stretch:75%;font-size:9px;font-weight:850;letter-spacing:.02em;line-height:1;color:var(--ink2);white-space:nowrap}
 .cal-day:not(.other-month):has(.cal-dot) .cal-tag{color:var(--on)}
 .cal-day.other-month .cal-tag{color:var(--surface2)}
+/* giorni con più sessioni: una fascia orizzontale per sessione (il colore viene dalla classe dot-...), separate da una linea scura */
+.cal-day.split:not(.other-month):has(.cal-band){padding:0;gap:2px;background:var(--bg);overflow:hidden;border:0}
+.cal-day.split.today,.cal-day.split.selected{outline:2px solid var(--cream);outline-offset:-2px}
+.cal-band{flex:1;width:100%;display:flex;align-items:center;justify-content:center;gap:4px;min-height:0}
+.cal-band .cal-num,.cal-band .cal-tag{color:var(--on)}
+.cal-band .cal-rest-badge{width:13px;height:13px;font-size:8px;margin:0;background:var(--on);color:var(--ink)}
 
 /* i colori dei tipi di sessione (pallini, legenda, Storico) */
 .dot-arya{background:var(--c-arya)}
@@ -654,6 +660,23 @@ function calTags(sessions) {
   return html;
 }
 
+// giorni con più sessioni: il tassello si divide in fasce orizzontali, una per sessione, ognuna col suo colore e la sua sigla.
+// Dall'alto: le sessioni ARYA nell'ordine in cui sono state segnate, poi la corsa, poi l'archivio Carol
+function calSplitBands(sessions, day, rest) {
+  var rank = function(s) { return s.id === 'arya' ? (s.idx || 1) : (s.id === 's5' ? 100 : 200); };
+  var list = sessions.slice().sort(function(a, b) { return rank(a) - rank(b); });
+  var html = '';
+  for (var i = 0; i < list.length; i++) {
+    var t = (list[i].id === 'arya') ? aryaTag(list[i].sd) : '';
+    html += '<div class="cal-band ' + dotClass(list[i].id, list[i].sd) + '">';
+    if (i === 0) html += '<span class="cal-num">' + day + '</span>';
+    if (t) html += '<span class="cal-tag">' + esc(t) + '</span>';
+    if (rest && i === list.length - 1) html += '<span class="cal-rest-badge">R</span>';
+    html += '</div>';
+  }
+  return html;
+}
+
 // nome della sessione con la sigla del programma ARYA accanto
 function sessName(id, sd) {
   var t = (id === 'arya') ? aryaTag(sd) : '';
@@ -789,7 +812,13 @@ function renderHome() {
     var dateStr = calYear + '-' + (calMonth+1<10?'0':'') + (calMonth+1) + '-' + (day<10?'0':'') + day;
     var sessions = getSessionsOnDate(dateStr);
     var isToday  = dateStr === today;
-    html += '<div class="cal-day' + (isToday?' today':'') + '" onclick="showDayDetail(\'' + dateStr + '\')">';
+    var isSplit  = sessions.length > 1;
+    html += '<div class="cal-day' + (isToday?' today':'') + (isSplit?' split':'') + '" onclick="showDayDetail(\'' + dateStr + '\')">';
+    if (isSplit) {
+      html += calSplitBands(sessions, day, isRestDay(dateStr));
+      html += '</div>';
+      continue;
+    }
     html += '<span class="cal-num">' + day + '</span>';
     if (sessions.length) {
       html += '<div class="cal-dots">';
@@ -824,7 +853,7 @@ function renderHome() {
     {cls:'dot-s5',   name:'Corsa'}
   ];
   // le vecchie sessioni Carol compaiono in legenda solo nei mesi in cui ci sono
-  if (html.indexOf('cal-dot dot-carol') !== -1) legendItems.push({cls:'dot-carol', name:'Archivio Carol'});
+  if (html.indexOf(' dot-carol') !== -1) legendItems.push({cls:'dot-carol', name:'Archivio Carol'});
   for (var li=0;li<legendItems.length;li++) {
     html += '<div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink3)">';
     html += '<div class="cal-dot ' + legendItems[li].cls + '"></div>' + legendItems[li].name + '</div>';
