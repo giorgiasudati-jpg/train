@@ -258,6 +258,32 @@ textarea.note-area:focus{outline:none;border-color:var(--cream)}
 .day-detail .btn-small{background:var(--surface2);color:var(--ink)}
 .day-detail .btn-small.rest-on{background:var(--cream);color:var(--on)}
 
+
+/* emoji delle schede: accanto alla parola, sul telefono sopra */
+.tab-ico{margin-right:6px}
+/* salva sessione: resta visibile appena sopra la barra mentre compili */
+.save-bar{position:sticky;bottom:calc(76px + var(--safe-b));z-index:5;display:flex;align-items:center;gap:12px;margin-top:1rem}
+.save-bar .btn-primary{box-shadow:0 6px 20px rgba(0,0,0,.55)}
+.save-bar .saved-ok{position:absolute;left:4px;bottom:100%;margin-bottom:6px;pointer-events:none;text-shadow:0 1px 6px #000}
+.day-detail{scroll-margin-bottom:calc(96px + var(--safe-b));scroll-margin-top:16px}
+button,a,label,select,input,textarea{touch-action:manipulation}
+/* telefono */
+@media(max-width:640px){
+  .tabs-wrap{border-radius:28px;overflow:visible}
+  .tab{flex:1 1 0;min-width:0;min-height:52px;padding:4px 2px;border-radius:22px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:11.5px;line-height:1.1}
+  .tab span{max-width:100%;overflow:hidden;text-overflow:ellipsis}
+  .tab-ico{font-size:17px;line-height:1;margin-right:0}
+  .main{padding-bottom:calc(8rem + var(--safe-b))}
+  .save-bar{bottom:calc(84px + var(--safe-b))}
+  .save-bar .btn-primary{flex:1;min-height:52px;font-size:15px}
+  .arya-card.compact-row{flex-direction:column;align-items:stretch;gap:.9rem}
+  .btn-small,.day-sess-goto{min-height:42px}
+  /* fuori dalla Panoramica la testata si fa piccola: il modulo parte subito */
+  body:not([data-tab="home"]) .header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-top:calc(.9rem + env(safe-area-inset-top,0px));padding-bottom:0}
+  body:not([data-tab="home"]) .header h1{font-size:2.2rem}
+  body:not([data-tab="home"]) .header-label,body:not([data-tab="home"]) .header-pills{display:none}
+  body:not([data-tab="home"]) .sync-pill{margin-top:0}
+}
 @media(max-width:480px){
   .home-stat-val{font-size:2.2rem}
   .session-info h2{font-size:2rem}
@@ -926,6 +952,9 @@ function showDayDetail(dateStr) {
   html += '<button class="btn-small' + (restActive ? ' rest-on' : '') + '" style="margin-top:10px" onclick="toggleRestDay(\'' + dateStr + '\')">' + (restActive ? '✓ Giorno di riposo — rimuovi' : '🛌 Segna come giorno di riposo') + '</button>';
   html += '</div>';
   wrap.innerHTML = html;
+  // sul telefono il riquadro compare sotto il calendario, fuori dallo schermo: la pagina scorre fin lì
+  var dd = wrap.querySelector('.day-detail');
+  if (dd) { var r = dd.getBoundingClientRect(); if (r.bottom > window.innerHeight - 90 || r.top < 0) dd.scrollIntoView({behavior: 'smooth', block: 'nearest'}); }
   // il giorno toccato resta evidenziato, così si vede che il clic è arrivato
   var cells = document.querySelectorAll('.cal-day');
   for (var ci = 0; ci < cells.length; ci++) {
@@ -1093,7 +1122,15 @@ function renderTabs() {
     if (CAROL_IDS.indexOf(s.id) !== -1) continue;
     html += '<button class="tab' + (s.id === currentTab ? ' active' : '') + '" onclick="switchTab(\'' + s.id + '\')">' + s.name + '</button>';
   }
-  document.getElementById('tabs-wrap').innerHTML = html;
+  document.getElementById('tabs-wrap').innerHTML = html.replace(/(>)([^<]*?)(<\/button>)/g, function(m, a, t, b) { return a + tabLabel(t) + b; });
+  document.body.setAttribute('data-tab', currentTab);
+}
+
+// l'emoji va sopra la parola, così sul telefono le quattro voci stanno nella barra senza scorrere
+function tabLabel(t) {
+  var m = t.match(/\p{Extended_Pictographic}\uFE0F?/u);
+  if (!m) return '<span>' + t + '</span>';
+  return '<span class="tab-ico">' + m[0] + '</span><span>' + t.replace(m[0], '').trim() + '</span>';
 }
 
 function switchTab(id) {
@@ -1214,12 +1251,11 @@ function renderRunMain(sch) {
   html += '<textarea class="note-area" id="session-note" placeholder="Come ti sei sentita, percorso, condizioni meteo..." oninput="saveRun(\'note\',this.value)">' + esc(rs.note || '') + '</textarea>';
   html += '</div>';
 
+  html += '<div class="save-bar"><button class="btn btn-primary" onclick="doSave()">Salva sessione</button><span class="saved-ok" id="saved-ok">&#10003; Salvato!</span></div>';
   html += '<div class="actions">';
-  html += '<button class="btn btn-primary" onclick="doSave()">Salva sessione</button>';
   html += '<button class="btn btn-secondary" onclick="doExportJSON()">&#8595; Backup dati</button>';
   html += '<button class="btn btn-secondary" onclick="document.getElementById(\'import-input\').click()">&#8593; Ripristina dati</button>';
   html += '<input type="file" id="import-input" accept=".json" style="display:none" onchange="doImportJSON(this)">';
-  html += '<span class="saved-ok" id="saved-ok">&#10003; Salvato!</span>';
   html += '</div>';
 
   // history
@@ -1432,12 +1468,11 @@ function renderAryaMain(sch) {
   html += '</div>';
 
   // azioni
+  html += '<div class="save-bar"><button class="btn btn-primary" onclick="doSave()">Salva sessione</button><span class="saved-ok" id="saved-ok">&#10003; Salvato!</span></div>';
   html += '<div class="actions">';
-  html += '<button class="btn btn-primary" onclick="doSave()">Salva sessione</button>';
   html += '<button class="btn btn-secondary" onclick="doExportJSON()">&#8595; Backup dati</button>';
   html += '<button class="btn btn-secondary" onclick="document.getElementById(\'import-input\').click()">&#8593; Ripristina dati</button>';
   html += '<input type="file" id="import-input" accept=".json" style="display:none" onchange="doImportJSON(this)">';
-  html += '<span class="saved-ok" id="saved-ok">&#10003; Salvato!</span>';
   html += '</div>';
 
   // storico ARYA — include sessioni multiple per giorno
@@ -1579,12 +1614,11 @@ function renderMain() {
   html += '<textarea class="note-area" id="session-note" placeholder="Note generali: come ti sei sentita, cosa e\' migliorato, cosa ricordare..." oninput="saveGenNote(this.value)">' + esc(sd.note || '') + '</textarea>';
   html += '</div>';
 
+  html += '<div class="save-bar"><button class="btn btn-primary" onclick="doSave()">Salva sessione</button><span class="saved-ok" id="saved-ok">&#10003; Salvato!</span></div>';
   html += '<div class="actions">';
-  html += '<button class="btn btn-primary" onclick="doSave()">Salva sessione</button>';
   html += '<button class="btn btn-secondary" onclick="doExportJSON()">&#8595; Backup dati</button>';
   html += '<button class="btn btn-secondary" onclick="document.getElementById(\'import-input\').click()">&#8593; Ripristina dati</button>';
   html += '<input type="file" id="import-input" accept=".json" style="display:none" onchange="doImportJSON(this)">';
-  html += '<span class="saved-ok" id="saved-ok">&#10003; Salvato!</span>';
   html += '</div>';
 
   html += renderHistory(sch);
