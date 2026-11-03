@@ -257,6 +257,7 @@ textarea.note-area:focus{outline:none;border-color:var(--cream)}
 .day-sess-goto:hover{background:#000}
 .day-detail .btn-small{background:var(--surface2);color:var(--ink)}
 .day-detail .btn-small.rest-on{background:var(--cream);color:var(--on)}
+.day-detail .rest-note{display:block;margin-top:10px}
 
 
 /* emoji delle schede: accanto alla parola, sul telefono sopra */
@@ -745,9 +746,26 @@ function isRestDay(dateStr) {
   return !!state['rest_' + dateStr];
 }
 
+// un riposo senza nota resta "true" (come i vecchi); con la nota diventa {note: "..."}
+function restNote(dateStr) {
+  var r = state['rest_' + dateStr];
+  return (r && typeof r === 'object' && r.note) ? r.note : '';
+}
+
+function saveRestNote(dateStr, val) {
+  var key = 'rest_' + dateStr;
+  if (!state[key]) return;
+  state[key] = val.trim() ? {note: val} : true;
+  saveLocalOnly();
+}
+
 function toggleRestDay(dateStr) {
   var key = 'rest_' + dateStr;
-  if (state[key]) delete state[key];
+  if (state[key]) {
+    // la nota se ne andrebbe insieme al riposo: meglio chiedere
+    if (restNote(dateStr).trim() && !confirm('Questo riposo ha una nota: togliendo il riposo si cancella anche la nota. Vuoi toglierlo?')) return;
+    delete state[key];
+  }
   else state[key] = true;
   saveState();
   renderHome();
@@ -950,6 +968,7 @@ function showDayDetail(dateStr) {
   }
   var restActive = isRestDay(dateStr);
   html += '<button class="btn-small' + (restActive ? ' rest-on' : '') + '" style="margin-top:10px" onclick="toggleRestDay(\'' + dateStr + '\')">' + (restActive ? '✓ Giorno di riposo — rimuovi' : '🛌 Segna come giorno di riposo') + '</button>';
+  if (restActive) html += '<textarea class="note-area rest-note" placeholder="Perché riposo oggi? Come si sente il corpo, energia, sonno..." oninput="saveRestNote(\'' + dateStr + '\',this.value)">' + esc(restNote(dateStr)) + '</textarea>';
   html += '</div>';
   wrap.innerHTML = html;
   // sul telefono il riquadro compare sotto il calendario, fuori dallo schermo: la pagina scorre fin lì
