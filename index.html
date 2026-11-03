@@ -295,9 +295,19 @@ textarea.note-area:focus{outline:none;border-color:var(--cream)}
 .mini-form .actions{margin-top:.2rem}
 .btn-danger{background:transparent;color:var(--c-fire);border-color:transparent;padding:0 10px}
 
-/* in fondo alla Panoramica */
+/* in fondo alla Panoramica: traguardi, lavagna, archivio */
+.home-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:1.6rem}
+.home-tile{display:flex;flex-direction:column;align-items:center;gap:6px;padding:1rem .5rem .9rem;border:0;border-radius:22px;background:var(--surface);color:var(--ink);cursor:pointer;transition:background .15s}
+.home-tile:hover{background:var(--surface2)}
+.home-tile-ico{font-size:28px;line-height:1;height:30px;display:flex;align-items:center}
+.home-tile-ico .ico-lavagna{width:32px;height:32px}
+.home-tile-name{font-stretch:75%;font-size:15px;font-weight:850;letter-spacing:.04em;text-transform:uppercase}
+.home-tile-sub{font-size:11px;font-weight:600;color:var(--ink3)}
+.ico-lavagna{width:1em;height:1em;vertical-align:-.1em}
 .home-links{display:flex;justify-content:center;gap:4px;margin-top:1.6rem}
 .home-links .archive-link{margin:0}
+.sec-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:.7rem}
+.sec-head .hist-title{margin-bottom:0}
 
 /* lavagna */
 .lav-add{display:flex;gap:8px;align-items:flex-end;margin-bottom:1.1rem}
@@ -320,6 +330,22 @@ textarea.note-area:focus{outline:none;border-color:var(--cream)}
 .trofeo-title{font-stretch:75%;font-size:1.25rem;font-weight:850;text-transform:uppercase;line-height:1.05;color:var(--ink);margin-top:3px}
 .trofeo-note{font-size:13.5px;color:var(--ink2);margin-top:6px;line-height:1.45;white-space:pre-wrap}
 .trofeo-new{background:var(--surface);border-radius:22px;padding:1rem 1.1rem;margin-bottom:1.1rem}
+.sfida-weeks{display:flex;flex-wrap:wrap;gap:4px;margin-top:9px}
+.sfida-w{width:20px;height:20px;border-radius:7px;background:var(--surface2)}
+.sfida-w.won{background:var(--c-strong)}
+.sfida-w.now{background:transparent;box-shadow:inset 0 0 0 2px var(--ink3)}
+.sfida-w.todo{background:transparent;box-shadow:inset 0 0 0 1px var(--line)}
+.sfida-status{font-size:12.5px;font-weight:700;color:var(--ink2);margin-top:7px}
+.trofeo.sfida.done{background:var(--c-strong)}
+.trofeo.sfida.done .trofeo-date,.trofeo.sfida.done .trofeo-title,.trofeo.sfida.done .sfida-status,.trofeo.sfida.done .trofeo-note{color:var(--on)}
+.trofeo.sfida.done .sfida-w{background:rgba(0,0,0,.15)}
+.trofeo.sfida.done .sfida-w.won{background:var(--on)}
+.goal-card + .goal-card,.trofeo + .goal-card{margin-top:8px}
+/* caselle settimana per settimana nel modulo della sfida */
+.per-week{display:flex;flex-wrap:wrap;gap:6px}
+.per-w{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;font-weight:700;color:var(--ink3)}
+.mini-form .fld .per-w input{width:48px;text-align:center;padding:9px 4px}
+.mini-form .fld .per-w.diff input{border-color:var(--c-strong);color:var(--c-strong)}
 .trofeo-new .mini-form{margin-top:0}
 
 /* suggerimenti sotto Programma e Titolo ARYA */
@@ -348,7 +374,6 @@ button,a,label,select,input,textarea{touch-action:manipulation}
   .save-bar .btn-primary{flex:1;min-height:52px;font-size:15px}
   .arya-card.compact-row{flex-direction:column;align-items:stretch;gap:.9rem}
   .btn-small,.day-sess-goto,.sugg-pill{min-height:42px}
-  .tab{font-size:10.5px}
   /* fuori dalla Panoramica la testata si fa piccola: il modulo parte subito */
   body:not([data-tab="home"]) .header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-top:calc(.9rem + env(safe-area-inset-top,0px));padding-bottom:0}
   body:not([data-tab="home"]) .header h1{font-size:2.2rem}
@@ -545,9 +570,23 @@ function persistLocal() {
 
 function sameVal(a, b) { return JSON.stringify(a) === JSON.stringify(b); }
 
+// vuota = solo campi vuoti, come una sessione appena aperta e non compilata
+function isBlank(v) {
+  if (v === '' || v === 0 || v === false || v == null) return true;
+  if (typeof v !== 'object') return false;
+  for (var k in v) if (!isBlank(v[k])) return false;
+  return true;
+}
+
 function dirtyKeys() {
   var ks = {}, k;
-  for (k in state) if (!isLocalKey(k) && !sameVal(state[k], synced[k])) ks[k] = 1;
+  for (k in state) {
+    if (isLocalKey(k) || sameVal(state[k], synced[k])) continue;
+    // una sessione vuota mai inviata (basta aprire la scheda per crearla) resta qui:
+    // inviarla coprirebbe quella compilata nel frattempo sull'altro dispositivo
+    if (!(k in synced) && isBlank(state[k])) continue;
+    ks[k] = 1;
+  }
   for (k in synced) if (!(k in state)) ks[k] = 1;
   return Object.keys(ks);
 }
@@ -871,14 +910,16 @@ function goalStarts() {
   return out.sort();
 }
 
-// l'ultima sfida iniziata entro il lunedì "mon", anche se già finita (null se nessuna)
+// l'ultima sfida iniziata entro il lunedì "mon", anche se già finita (null se nessuna).
+// "t" è il numero di sessioni di quella settimana: di solito "n", ma una settimana può essere diversa ("per")
 function lastGoal(mon) {
   var starts = goalStarts(), from = null;
   for (var i = 0; i < starts.length; i++) if (starts[i] <= mon) from = starts[i];
   if (!from) return null;
   var g = state['obiettivo_' + from];
   var week = Math.round((Date.parse(mon) - Date.parse(from)) / 604800000) + 1;
-  return {from: from, name: g.name || '', n: g.n, weeks: g.weeks || null, runs: !!g.runs, week: week, ended: !!(g.weeks && week > g.weeks)};
+  var t = (g.per && g.per[week]) || g.n;
+  return {from: from, name: g.name || '', n: g.n, t: t, weeks: g.weeks || null, runs: !!g.runs, week: week, ended: !!(g.weeks && week > g.weeks)};
 }
 
 // la sfida in corso nella settimana che inizia lunedì "mon"
@@ -894,7 +935,7 @@ function weekStat(mon) {
     var ss = getSessionsOnDate(dayAdd(mon, i));
     for (var j = 0; j < ss.length; j++) if (ss[j].id === 'arya' || (g && g.runs && ss[j].id === 's5')) count++;
   }
-  return {goal: g, count: count, won: !!(g && g.n && count >= g.n)};
+  return {goal: g, count: count, won: !!(g && g.t && count >= g.t)};
 }
 
 function weeksWon() {
@@ -903,6 +944,35 @@ function weeksWon() {
   var won = 0, last = mondayOf(todayStr());
   for (var mon = starts[0]; mon <= last; mon = dayAdd(mon, 7)) if (weekStat(mon).won) won++;
   return won;
+}
+
+// una sfida settimana per settimana: 'won' vinta, 'lost' persa, 'now' in corso, 'todo' ancora da fare.
+// È completata quando tutte le settimane previste sono vinte; si ferma se parte la sfida successiva.
+function sfidaInfo(from) {
+  var g = state['obiettivo_' + from], thisMon = mondayOf(todayStr()), starts = goalStarts(), next = null;
+  for (var i = 0; i < starts.length; i++) if (starts[i] > from) { next = starts[i]; break; }
+  var upTo = next ? dayAdd(next, -7) : thisMon;
+  var nW = g.weeks || Math.max(1, Math.round((Date.parse(upTo) - Date.parse(from)) / 604800000) + 1);
+  var weeks = [], won = 0, cut = false;
+  for (var w = 1; w <= nW; w++) {
+    var mon = dayAdd(from, (w - 1) * 7);
+    if (next && mon >= next) { cut = true; break; }
+    if (mon > thisMon) { weeks.push('todo'); continue; }
+    if (weekStat(mon).won) { won++; weeks.push('won'); }
+    else weeks.push(mon === thisMon ? 'now' : 'lost');
+  }
+  var open = weeks.indexOf('now') !== -1 || weeks.indexOf('todo') !== -1;
+  return {
+    from: from, name: g.name || 'Sfida', note: g.note || '', total: g.weeks || null, weeks: weeks, won: won, cut: cut,
+    done: !!g.weeks && !cut && won === g.weeks,
+    running: !cut && (open || (!g.weeks && !next)),
+    week: Math.round((Date.parse(thisMon) - Date.parse(from)) / 604800000) + 1,
+    end: dayAdd(from, weeks.length * 7 - 1)
+  };
+}
+
+function sfideDone() {
+  return goalStarts().filter(function(f) { return sfidaInfo(f).done; }).length;
 }
 
 function calWeekOpen(mon, thisMon) {
@@ -918,12 +988,11 @@ function goalCardHtml() {
     var last = lastGoal(mon);
     html += '<div class="goal-card"><div class="goal-label">Questa settimana</div>';
     if (last && last.ended) {
-      var wonN = 0;
-      for (var w = 0; w < last.weeks; w++) if (weekStat(dayAdd(last.from, w * 7)).won) wonN++;
-      html += '<div class="goal-name">' + esc(last.name || 'Sfida') + ' finita</div>';
-      html += '<div class="goal-empty">' + wonN + ' settiman' + (wonN === 1 ? 'a vinta' : 'e vinte') + ' su ' + last.weeks + '. Quando vuoi, scegli la prossima sfida.</div>';
+      var info = sfidaInfo(last.from);
+      html += '<div class="goal-name">' + esc(info.name) + (info.done ? ' completata' : ' finita') + '</div>';
+      html += '<div class="goal-empty">' + (info.done ? 'Tutte le ' + info.weeks.length + ' settimane vinte: la trovi nei Traguardi.' : info.won + ' settiman' + (info.won === 1 ? 'a vinta' : 'e vinte') + ' su ' + info.weeks.length + '.') + ' Quando vuoi, scegli la prossima sfida.</div>';
       html += '<div class="goal-foot"><div class="goal-btns">';
-      html += '<button class="btn-small" onclick="trofeoFromGoal(\'' + last.from + '\')">🏆 Segna tra i traguardi</button>';
+      html += '<button class="btn-small" onclick="switchTab(\'traguardi\')">🏆 Traguardi</button>';
       html += '<button class="btn-small" onclick="openGoalForm(false)">＋ Nuova sfida</button>';
       html += '</div></div>';
     } else {
@@ -933,15 +1002,16 @@ function goalCardHtml() {
     }
     return html + '</div>';
   }
-  var left = g.n - ws.count;
+  var left = g.t - ws.count;
+  var finale = ws.won && g.weeks && g.week === g.weeks && sfidaInfo(g.from).done;
   html += '<div class="goal-card' + (ws.won ? ' won' : '') + '">';
   html += '<div class="goal-head"><div style="min-width:0"><div class="goal-label">Questa settimana &middot; ' + (g.weeks ? g.week + ' di ' + g.weeks : 'settimana ' + g.week) + '</div>';
   html += '<div class="goal-name">' + esc(g.name || 'Obiettivo') + '</div></div>';
-  html += '<div class="goal-count">' + ws.count + '/' + g.n + '</div></div>';
+  html += '<div class="goal-count">' + ws.count + '/' + g.t + '</div></div>';
   html += '<div class="goal-ticks">';
-  for (var i = 0; i < g.n; i++) html += '<div class="goal-tick' + (i < ws.count ? ' on' : '') + '"></div>';
+  for (var i = 0; i < g.t; i++) html += '<div class="goal-tick' + (i < ws.count ? ' on' : '') + '"></div>';
   html += '</div>';
-  html += '<div class="goal-foot"><span>' + (ws.won ? '🏆 Settimana vinta!' : (left === 1 ? 'Ne manca 1' : 'Ne mancano ' + left) + ' entro domenica') + '</span>';
+  html += '<div class="goal-foot"><span>' + (finale ? '🏆 Sfida completata!' : ws.won ? '🏆 Settimana vinta!' : (left === 1 ? 'Ne manca 1' : 'Ne mancano ' + left) + ' entro domenica') + '</span>';
   html += '<div class="goal-btns"><button class="btn-small" onclick="openGoalForm(true)">Modifica</button><button class="btn-small" onclick="openGoalForm(false)">＋ Nuova sfida</button></div></div>';
   return html + '</div>';
 }
@@ -952,26 +1022,61 @@ function goalFormHtml() {
   html += '<div class="mini-form">';
   html += '<div class="fld"><span class="fld-label">Nome</span><input type="text" id="goal-name" placeholder="es. Tonifica &amp; Drena" value="' + esc(f.name || '') + '"></div>';
   html += '<div class="fld-row">';
-  html += '<div class="fld"><span class="fld-label">Sessioni ARYA a settimana</span><input type="number" id="goal-n" min="1" inputmode="numeric" placeholder="6" value="' + esc(f.n || '') + '"></div>';
-  html += '<div class="fld"><span class="fld-label">Per quante settimane</span><input type="number" id="goal-weeks" min="1" inputmode="numeric" placeholder="senza fine" value="' + esc(f.weeks || '') + '"></div>';
+  html += '<div class="fld"><span class="fld-label">Sessioni ARYA a settimana</span><input type="number" id="goal-n" min="1" inputmode="numeric" placeholder="6" value="' + esc(f.n || '') + '" oninput="goalFormInput()"></div>';
+  html += '<div class="fld"><span class="fld-label">Per quante settimane</span><input type="number" id="goal-weeks" min="1" inputmode="numeric" placeholder="senza fine" value="' + esc(f.weeks || '') + '" oninput="goalFormInput()"></div>';
   html += '</div>';
+  html += '<div class="fld" id="goal-perweek">' + goalPerWeekHtml() + '</div>';
   html += '<div class="fld"><span class="fld-label">Dalla settimana del</span><input type="date" id="goal-from" value="' + esc(f.from) + '"><span class="fld-hint">Conta dal lunedì di quella settimana.</span></div>';
   html += '<label class="chk-line"><input type="checkbox" id="goal-runs"' + (f.runs ? ' checked' : '') + '> Conta anche le corse</label>';
+  html += '<div class="fld"><span class="fld-label">Nota</span><textarea id="goal-note" placeholder="Cosa vuoi ottenere, com\'è andata...">' + esc(f.note || '') + '</textarea></div>';
   html += '<div class="actions"><button class="btn btn-primary" onclick="saveGoal()">Salva</button><button class="btn btn-secondary" onclick="closeGoalForm()">Annulla</button>';
   if (f.editing) html += '<button class="btn btn-danger" onclick="deleteGoal()">Togli la sfida</button>';
   return html + '</div></div></div>';
 }
 
-function openGoalForm(editing) {
+// una casella per settimana, già col numero di base: si cambia solo dove la settimana è diversa
+function goalPerWeekHtml() {
+  var f = _goalForm, n = parseInt(f.n, 10) || 0, weeks = parseInt(f.weeks, 10) || 0;
+  if (!n || !weeks) return '';
+  var html = '<span class="fld-label">Settimana per settimana</span><div class="per-week">';
+  for (var w = 1; w <= weeks; w++) {
+    var v = (f.per && f.per[w]) || n;
+    html += '<label class="per-w' + (v !== n ? ' diff' : '') + '"><span>' + w + 'ª</span><input type="number" min="1" inputmode="numeric" value="' + v + '" oninput="setGoalPer(' + w + ',this)"></label>';
+  }
+  return html + '</div><span class="fld-hint">Cambia il numero solo nelle settimane diverse.</span>';
+}
+
+function goalFormInput() {
+  _goalForm.n = document.getElementById('goal-n').value;
+  _goalForm.weeks = document.getElementById('goal-weeks').value;
+  document.getElementById('goal-perweek').innerHTML = goalPerWeekHtml();
+}
+
+function setGoalPer(w, el) {
+  var v = parseInt(el.value, 10), n = parseInt(_goalForm.n, 10);
+  if (v > 0 && v !== n) _goalForm.per[w] = v;
+  else delete _goalForm.per[w];
+  el.parentNode.classList.toggle('diff', v > 0 && v !== n);
+}
+
+// editing: la sfida in corso, oppure quella che parte da "from" (dai Traguardi)
+function openGoalForm(editing, from) {
   var mon = mondayOf(todayStr()), cur = goalFor(mon);
-  if (editing && cur) {
-    _goalForm = {editing: true, from: cur.from, name: cur.name, n: cur.n, weeks: cur.weeks, runs: cur.runs};
+  var src = editing ? (from || (cur && cur.from)) : null;
+  if (src) {
+    var g = state['obiettivo_' + src];
+    _goalForm = {editing: true, from: src, name: g.name || '', n: g.n, weeks: g.weeks || '', runs: !!g.runs, per: JSON.parse(JSON.stringify(g.per || {})), note: g.note || ''};
   } else {
     // una sfida nuova parte da lunedì prossimo se ce n'è già una in corso, altrimenti da questa settimana
-    _goalForm = {editing: false, from: cur ? dayAdd(mon, 7) : mon, name: '', n: cur ? cur.n : '', weeks: null, runs: false};
+    _goalForm = {editing: false, from: cur ? dayAdd(mon, 7) : mon, name: '', n: cur ? cur.n : '', weeks: '', runs: false, per: {}, note: ''};
     if (!goalStarts().length) goalGuess(_goalForm, mon);
   }
-  document.getElementById('goal-wrap').innerHTML = goalCardHtml();
+  showGoalForm();
+}
+
+function showGoalForm() {
+  if (currentTab === 'home') document.getElementById('goal-wrap').innerHTML = goalCardHtml();
+  else renderTraguardi();
 }
 
 // la prima volta propone il programma ARYA in corso: nome, lunedì in cui è iniziato, sessioni della settimana scorsa
@@ -995,7 +1100,7 @@ function goalGuess(f, mon) {
 
 function closeGoalForm() {
   _goalForm = null;
-  document.getElementById('goal-wrap').innerHTML = goalCardHtml();
+  showGoalForm();
 }
 
 function saveGoal() {
@@ -1005,11 +1110,17 @@ function saveGoal() {
   var weeks = parseInt(document.getElementById('goal-weeks').value, 10);
   var from = mondayOf(document.getElementById('goal-from').value || todayStr());
   if ((!f.editing || from !== f.from) && state['obiettivo_' + from] && !confirm('Da quella settimana parte già un\'altra sfida: la sostituisco con questa?')) return;
+  var g = {name: document.getElementById('goal-name').value.trim(), n: n, weeks: weeks > 0 ? weeks : null, runs: document.getElementById('goal-runs').checked};
+  var per = {};
+  for (var w in f.per) if (w <= (g.weeks || 0) && f.per[w] !== n) per[w] = f.per[w];
+  if (Object.keys(per).length) g.per = per;
+  var note = document.getElementById('goal-note').value.trim();
+  if (note) g.note = note;
   if (f.editing && from !== f.from) delete state['obiettivo_' + f.from];
-  state['obiettivo_' + from] = {name: document.getElementById('goal-name').value.trim(), n: n, weeks: weeks > 0 ? weeks : null, runs: document.getElementById('goal-runs').checked};
+  state['obiettivo_' + from] = g;
   _goalForm = null;
   saveState();
-  renderHome();
+  rerender();
 }
 
 function deleteGoal() {
@@ -1017,7 +1128,7 @@ function deleteGoal() {
   delete state['obiettivo_' + _goalForm.from];
   _goalForm = null;
   saveState();
-  renderHome();
+  rerender();
 }
 
 function renderHome() {
@@ -1175,11 +1286,13 @@ function renderHome() {
   // day detail placeholder
   html += '<div id="day-detail-wrap"></div>';
 
-  // traguardi e archivio Carol non stanno nella barra in basso: si aprono da qui
-  var nTrofei = trofeoList().length;
-  html += '<div class="home-links">';
-  html += '<button class="archive-link" onclick="switchTab(\'traguardi\')">🏆 Traguardi' + (nTrofei ? ' · ' + nTrofei : '') + '</button>';
-  html += '<button class="archive-link" onclick="switchTab(carolCurrentSub)">📦 Archivio</button>';
+  // traguardi, lavagna e archivio Carol non stanno nella barra in basso: si aprono da qui
+  var nTrofei = sfideDone() + trofeoList().length, nLav = 0;
+  for (var lk in state) if (lk.indexOf('lavagna_') === 0 && !state[lk].done) nLav++;
+  html += '<div class="home-tiles">';
+  html += '<button class="home-tile" onclick="switchTab(\'traguardi\')"><span class="home-tile-ico">🏆</span><span class="home-tile-name">Traguardi</span><span class="home-tile-sub">' + (nTrofei || 'nessuno') + '</span></button>';
+  html += '<button class="home-tile" onclick="switchTab(\'lavagna\')"><span class="home-tile-ico">' + ICO_LAVAGNA + '</span><span class="home-tile-name">Lavagna</span><span class="home-tile-sub">' + (nLav ? nLav + ' da fare' : 'vuota') + '</span></button>';
+  html += '<button class="home-tile" onclick="switchTab(carolCurrentSub)"><span class="home-tile-ico">📦</span><span class="home-tile-name">Archivio</span><span class="home-tile-sub">Carol</span></button>';
   html += '</div>';
 
   document.getElementById('main-content').innerHTML = html;
@@ -1267,6 +1380,9 @@ function newId() {
 
 /* ── LAVAGNA ─────────────────────────────────────────────────── */
 // appunti sparsi (attrezzi, ricerche, idee): ogni appunto è una voce "lavagna_<id>" = {text, done, at, doneAt}
+// una lavagna come emoji non esiste: è disegnata qui (cornice di legno, gesso, cavalletto)
+var ICO_LAVAGNA = '<svg class="ico-lavagna" viewBox="0 0 32 32" aria-hidden="true"><path d="M9 24.5 6.5 30.5M23 24.5l2.5 6" stroke="#8A5A33" stroke-width="2.2" stroke-linecap="round"/><rect x="2" y="3" width="28" height="21.5" rx="3" fill="#C08A55"/><rect x="4.4" y="5.4" width="23.2" height="16.7" rx="1.4" fill="#2D4A3B"/><path d="M8 10.5c1.6-1.4 3-1.4 4.4 0s2.8 1.4 4.4 0M8 14.6h12.5M8 18h7.5" fill="none" stroke="#F3F0E8" stroke-width="1.5" stroke-linecap="round" opacity=".92"/><rect x="20" y="19.6" width="5" height="1.7" rx=".85" fill="#F3F0E8"/></svg>';
+
 function renderLavagna() {
   var open = [], done = [];
   for (var k in state) {
@@ -1276,7 +1392,7 @@ function renderLavagna() {
   }
   open.sort(function(a, b) { return (b.v.at || '').localeCompare(a.v.at || ''); });
   done.sort(function(a, b) { return (b.v.doneAt || '').localeCompare(a.v.doneAt || ''); });
-  var html = '<div class="session-bar"><div class="session-info"><h2>Lavagna</h2><p>' + open.length + ' da fare' + (done.length ? ' &middot; ' + done.length + ' fatt' + (done.length === 1 ? 'o' : 'i') : '') + '</p></div></div>';
+  var html = '<div class="session-bar"><div class="session-info"><h2>' + ICO_LAVAGNA + ' Lavagna</h2><p>' + open.length + ' da fare' + (done.length ? ' &middot; ' + done.length + ' fatt' + (done.length === 1 ? 'o' : 'i') : '') + '</p></div></div>';
   html += '<div class="lav-add"><textarea id="lav-new" rows="1" placeholder="Attrezzi, ricerche, idee..." oninput="fitLav(this)" onkeydown="if(event.key===\'Enter\'&&!event.shiftKey&&!event.isComposing){event.preventDefault();addLavagna()}"></textarea><button class="btn btn-primary" onclick="addLavagna()">Aggiungi</button></div>';
   if (!open.length && !done.length) html += '<div class="hist-empty">La lavagna è vuota: scrivi qui quello che ti viene in mente sull\'allenamento.</div>';
   var all = open.concat(done);
@@ -1288,6 +1404,7 @@ function renderLavagna() {
     html += '<button class="lav-del" onclick="deleteLavagna(\'' + x.id + '\')" aria-label="Cancella">&times;</button>';
     html += '</div>';
   }
+  html += '<div class="home-links"><button class="archive-link" onclick="switchTab(\'home\')">← Panoramica</button></div>';
   document.getElementById('main-content').innerHTML = html;
   var tas = document.querySelectorAll('.lav-text');
   for (var j = 0; j < tas.length; j++) fitLav(tas[j]);
@@ -1333,9 +1450,9 @@ function deleteLavagna(id) {
 }
 
 /* ── TRAGUARDI ───────────────────────────────────────────────── */
+// Le sfide completate compaiono da sole; gli altri traguardi si scrivono a mano:
 // ogni traguardo è una voce "traguardo_<id>" = {date, title, note}
 var _trofeoEdit = null;  // traguardo aperto nel modulo: il suo id, oppure 'new'
-var _trofeoDraft = null; // proposta per un traguardo nuovo (dalla sfida appena finita)
 
 function trofeoList() {
   var out = [];
@@ -1344,9 +1461,14 @@ function trofeoList() {
   return out;
 }
 
+function fmtFull(dateStr) {
+  var p = dateStr.split('-');
+  return p[2] + '/' + p[1] + '/' + p[0];
+}
+
 function trofeoFormHtml(id, t) {
   var html = '<div class="mini-form">';
-  html += '<div class="fld"><span class="fld-label">Traguardo</span><input type="text" id="tr-title" placeholder="es. ARYA On Fire completato" value="' + esc(t.title || '') + '"></div>';
+  html += '<div class="fld"><span class="fld-label">Traguardo</span><input type="text" id="tr-title" placeholder="es. Primo hip thrust con 20 kg" value="' + esc(t.title || '') + '"></div>';
   html += '<div class="fld"><span class="fld-label">Data</span><input type="date" id="tr-date" value="' + esc(t.date || todayStr()) + '"></div>';
   html += '<div class="fld"><span class="fld-label">Nota</span><textarea id="tr-note" placeholder="Com\'è andata, cosa ti porti dietro...">' + esc(t.note || '') + '</textarea></div>';
   html += '<div class="actions"><button class="btn btn-primary" onclick="saveTrofeo(\'' + id + '\')">Salva</button><button class="btn btn-secondary" onclick="closeTrofeo()">Annulla</button>';
@@ -1354,18 +1476,48 @@ function trofeoFormHtml(id, t) {
   return html + '</div></div>';
 }
 
+function sfidaCardHtml(s) {
+  var status;
+  if (s.done) status = 'Completata &middot; ' + s.weeks.length + ' settimane su ' + s.weeks.length;
+  else if (s.running) status = 'In corso &middot; settimana ' + s.week + (s.total ? ' di ' + s.total : '') + ' &middot; ' + s.won + ' vint' + (s.won === 1 ? 'a' : 'e');
+  else status = (s.cut ? 'Interrotta' : 'Finita') + ' &middot; ' + s.won + ' settiman' + (s.won === 1 ? 'a vinta' : 'e vinte') + ' su ' + s.weeks.length;
+  var html = '<div class="trofeo sfida' + (s.done ? ' done' : '') + '"><div class="trofeo-ico">' + (s.done ? '🏆' : s.running ? '⏳' : '🏁') + '</div><div class="trofeo-body">';
+  html += '<div class="trofeo-date">' + fmtFull(s.from) + ' &rarr; ' + (s.running ? 'in corso' : fmtFull(s.end)) + '</div>';
+  html += '<div class="trofeo-title">' + esc(s.name) + '</div>';
+  html += '<div class="sfida-weeks">';
+  for (var i = 0; i < s.weeks.length; i++) html += '<span class="sfida-w ' + s.weeks[i] + '" title="Settimana ' + (i + 1) + '"></span>';
+  html += '</div>';
+  html += '<div class="sfida-status">' + status + '</div>';
+  if (s.note) html += '<div class="trofeo-note">' + esc(s.note) + '</div>';
+  return html + '</div><button class="btn-small" onclick="openGoalForm(true,\'' + s.from + '\')">Modifica</button></div>';
+}
+
 function renderTraguardi() {
-  var list = trofeoList();
-  var html = '<div class="session-bar"><div class="session-info"><h2>🏆 Traguardi</h2><p>' + (list.length ? list.length + (list.length === 1 ? ' traguardo raggiunto' : ' traguardi raggiunti') : 'I passi che vale la pena ricordare') + '</p></div></div>';
-  if (_trofeoEdit === 'new') html += '<div class="trofeo-new">' + trofeoFormHtml('new', _trofeoDraft || {}) + '</div>';
-  else html += '<div class="actions" style="margin:0 0 1.1rem"><button class="btn btn-primary" onclick="openTrofeo(\'new\')">＋ Nuovo traguardo</button></div>';
-  if (!list.length && _trofeoEdit !== 'new') html += '<div class="hist-empty">Ancora nessun traguardo: il primo lo scrivi tu.</div>';
+  var list = trofeoList(), starts = goalStarts().reverse(), nDone = sfideDone() + list.length;
+  var html = '<div class="session-bar"><div class="session-info"><h2>🏆 Traguardi</h2><p>' + (nDone ? nDone + (nDone === 1 ? ' traguardo raggiunto' : ' traguardi raggiunti') : 'I passi che vale la pena ricordare') + '</p></div></div>';
+
+  // sfide: la più recente in alto, settimana per settimana
+  html += '<div class="sec-head"><div class="hist-title">Sfide</div>';
+  if (!(_goalForm && !_goalForm.editing)) html += '<button class="btn-small" onclick="openGoalForm(false)">＋ Nuova sfida</button>';
+  html += '</div>';
+  if (_goalForm && !_goalForm.editing) html += goalFormHtml();
+  if (!starts.length && !_goalForm) html += '<div class="hist-empty" style="margin-bottom:1rem">Ancora nessuna sfida: quando ne completi una, compare qui da sola.</div>';
+  for (var si = 0; si < starts.length; si++) {
+    if (_goalForm && _goalForm.editing && _goalForm.from === starts[si]) { html += goalFormHtml(); continue; }
+    html += sfidaCardHtml(sfidaInfo(starts[si]));
+  }
+
+  // tutto il resto, scritto a mano
+  html += '<div class="sec-head" style="margin-top:1.6rem"><div class="hist-title">Altri traguardi</div>';
+  if (_trofeoEdit !== 'new') html += '<button class="btn-small" onclick="openTrofeo(\'new\')">＋ Nuovo</button>';
+  html += '</div>';
+  if (_trofeoEdit === 'new') html += '<div class="trofeo-new">' + trofeoFormHtml('new', {}) + '</div>';
+  if (!list.length && _trofeoEdit !== 'new') html += '<div class="hist-empty">Un record, una prima volta, una cosa che non riuscivi a fare: scrivila qui.</div>';
   for (var i = 0; i < list.length; i++) {
     var it = list[i];
     if (_trofeoEdit === it.id) { html += '<div class="trofeo-new">' + trofeoFormHtml(it.id, it.t) + '</div>'; continue; }
-    var p = (it.t.date || '').split('-');
-    html += '<div class="trofeo"><div class="trofeo-ico">🏆</div><div class="trofeo-body">';
-    if (it.t.date) html += '<div class="trofeo-date">' + p[2] + '/' + p[1] + '/' + p[0] + '</div>';
+    html += '<div class="trofeo"><div class="trofeo-ico">⭐</div><div class="trofeo-body">';
+    if (it.t.date) html += '<div class="trofeo-date">' + fmtFull(it.t.date) + '</div>';
     html += '<div class="trofeo-title">' + esc(it.t.title || 'Senza titolo') + '</div>';
     if (it.t.note) html += '<div class="trofeo-note">' + esc(it.t.note) + '</div>';
     html += '</div><button class="btn-small" onclick="openTrofeo(\'' + it.id + '\')">Modifica</button></div>';
@@ -1381,16 +1533,7 @@ function openTrofeo(id) {
 
 function closeTrofeo() {
   _trofeoEdit = null;
-  _trofeoDraft = null;
   renderTraguardi();
-}
-
-// dalla sfida finita: titolo e data (la sua ultima domenica) già scritti
-function trofeoFromGoal(from) {
-  var g = state['obiettivo_' + from];
-  _trofeoEdit = 'new';
-  _trofeoDraft = {title: (g.name || 'Sfida') + ' completato', date: dayAdd(from, (g.weeks || 1) * 7 - 1), note: ''};
-  switchTab('traguardi');
 }
 
 function saveTrofeo(id) {
@@ -1399,7 +1542,6 @@ function saveTrofeo(id) {
   if (id === 'new') id = newId();
   state['traguardo_' + id] = {title: title, date: document.getElementById('tr-date').value || todayStr(), note: document.getElementById('tr-note').value.trim()};
   _trofeoEdit = null;
-  _trofeoDraft = null;
   saveState();
   renderTraguardi();
 }
@@ -1561,7 +1703,6 @@ function renderTabs() {
     if (CAROL_IDS.indexOf(s.id) !== -1) continue;
     html += '<button class="tab' + (s.id === currentTab ? ' active' : '') + '" onclick="switchTab(\'' + s.id + '\')">' + s.name + '</button>';
   }
-  html += '<button class="tab' + (currentTab === 'lavagna' ? ' active' : '') + '" onclick="switchTab(\'lavagna\')">📌 Lavagna</button>';
   document.getElementById('tabs-wrap').innerHTML = html.replace(/(>)([^<]*?)(<\/button>)/g, function(m, a, t, b) { return a + tabLabel(t) + b; });
   document.body.setAttribute('data-tab', currentTab);
 }
@@ -1575,6 +1716,8 @@ function tabLabel(t) {
 
 function switchTab(id) {
   currentTab = id;
+  _goalForm = null;   // un modulo lasciato aperto non riappare in un'altra scheda
+  _trofeoEdit = null;
   if (CAROL_IDS.indexOf(id) !== -1) carolCurrentSub = id;
   renderTabs();
   if (id === 'home') renderHome();
