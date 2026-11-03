@@ -169,7 +169,7 @@ textarea.note-area:focus{outline:none;border-color:var(--cream)}
 .sync-dot{width:7px;height:7px;border-radius:50%;background:currentColor}
 
 /* Panoramica: numeri e calendario */
-.home-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1.2rem}
+.home-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1.2rem}
 .home-stat{background:var(--surface);border:0;border-radius:22px;padding:1rem .8rem;text-align:left}
 .home-stat:nth-child(1){background:var(--c-strong);color:var(--on)}
 .home-stat-val{font-stretch:68%;font-size:2.6rem;font-weight:850;color:inherit;line-height:.9}
@@ -179,7 +179,13 @@ textarea.note-area:focus{outline:none;border-color:var(--cream)}
 .cal-nav-title{font-stretch:68%;font-size:1.9rem;font-weight:850;text-transform:uppercase;color:var(--ink)}
 .cal-nav-btn{background:var(--surface);border:0;border-radius:50%;width:42px;height:42px;cursor:pointer;font-size:18px;font-weight:700;color:var(--ink);display:flex;align-items:center;justify-content:center;transition:background .15s}
 .cal-nav-btn:hover{background:var(--surface2)}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:1rem}
+.cal-grid{display:flex;flex-direction:column;gap:5px;margin-bottom:1rem}
+/* ogni riga del calendario è una settimana (lunedì-domenica) con la sua cornice; si accende quando è vinta */
+.cal-week{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;padding:4px;border:1.5px solid var(--line);border-radius:19px;position:relative}
+.cal-week.cal-dows{border-color:transparent;padding-top:0;padding-bottom:0}
+.cal-week.current{border-color:var(--ink3)}
+.cal-week.won{border-color:var(--c-strong);background:rgba(185,166,245,.14)}
+.cal-week.won::after{content:'🏆';position:absolute;top:-9px;right:-7px;font-size:12px;line-height:1;padding:3px;border-radius:50%;background:var(--bg)}
 .cal-dow{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);text-align:center;padding-bottom:4px}
 .cal-day{min-height:52px;border-radius:14px;border:2px solid transparent;padding:6px 3px 5px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;transition:background .12s, border-color .12s;position:relative;background:var(--surface)}
 .cal-day:hover{border-color:var(--ink3)}
@@ -259,6 +265,69 @@ textarea.note-area:focus{outline:none;border-color:var(--cream)}
 .day-detail .btn-small.rest-on{background:var(--cream);color:var(--on)}
 .day-detail .rest-note{display:block;margin-top:10px}
 
+/* obiettivo della settimana */
+.goal-card{background:var(--surface);border-radius:22px;padding:1rem 1.1rem;margin-bottom:1.2rem;color:var(--ink)}
+.goal-card.won{background:var(--c-strong);color:var(--on)}
+.goal-head{display:flex;align-items:flex-end;justify-content:space-between;gap:10px}
+.goal-label{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;opacity:.7}
+.goal-name{font-stretch:68%;font-size:1.7rem;font-weight:850;text-transform:uppercase;line-height:1;margin-top:5px}
+.goal-count{font-stretch:68%;font-size:2.6rem;font-weight:850;line-height:.9;white-space:nowrap}
+.goal-ticks{display:flex;gap:4px;margin-top:.85rem}
+.goal-tick{flex:1;height:10px;border-radius:999px;background:var(--surface2)}
+.goal-tick.on{background:var(--c-strong)}
+.goal-card.won .goal-tick{background:rgba(0,0,0,.15)}
+.goal-card.won .goal-tick.on{background:var(--on)}
+.goal-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:.85rem;font-size:13px;font-weight:600;flex-wrap:wrap}
+.goal-foot .goal-btns{display:flex;gap:6px;flex-wrap:wrap}
+.goal-card .btn-small{background:var(--surface2);color:var(--ink)}
+.goal-card.won .btn-small{background:var(--on);color:var(--ink)}
+.goal-empty{font-size:14px;color:var(--ink2);margin-top:4px}
+/* moduli piccoli: obiettivo e traguardi */
+.mini-form{display:flex;flex-direction:column;gap:.8rem;margin-top:.9rem}
+.mini-form .fld input,.mini-form .fld textarea{width:100%;font-size:16px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface2);color:var(--ink)}
+.mini-form .fld textarea{min-height:70px;resize:vertical;line-height:1.5}
+.mini-form .fld input:focus,.mini-form .fld textarea:focus{outline:none;border-color:var(--cream)}
+.mini-form .fld-row{display:flex;gap:.8rem;align-items:flex-end}
+.mini-form .fld-row .fld{flex:1;min-width:0}
+.mini-form .fld-hint{font-size:11px;color:var(--ink3)}
+.mini-form .chk-line{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink2)}
+.mini-form .chk-line input{width:20px;height:20px;accent-color:var(--c-strong)}
+.mini-form .actions{margin-top:.2rem}
+.btn-danger{background:transparent;color:var(--c-fire);border-color:transparent;padding:0 10px}
+
+/* in fondo alla Panoramica */
+.home-links{display:flex;justify-content:center;gap:4px;margin-top:1.6rem}
+.home-links .archive-link{margin:0}
+
+/* lavagna */
+.lav-add{display:flex;gap:8px;align-items:flex-end;margin-bottom:1.1rem}
+.lav-add textarea{flex:1;font-size:16px;padding:12px 16px;border:1px solid var(--line);border-radius:22px;background:var(--surface);color:var(--ink);resize:none;line-height:1.4;min-height:48px}
+.lav-add textarea:focus{outline:none;border-color:var(--cream)}
+.lav-item{display:flex;align-items:flex-start;gap:10px;background:var(--surface);border-radius:22px;padding:.7rem .6rem .7rem .9rem;margin-bottom:7px}
+.lav-item .chk{margin-top:2px}
+.lav-item .chk.done{background:var(--cream);border-color:var(--cream)}
+.lav-text{flex:1;min-width:0;font-size:15.5px;line-height:1.4;padding:3px 0;border:0;background:transparent;color:var(--ink);resize:none;overflow:hidden}
+.lav-text:focus{outline:none}
+.lav-item.done .lav-text{text-decoration:line-through;text-decoration-thickness:2px;color:var(--ink3)}
+.lav-del{flex-shrink:0;width:34px;height:34px;border:0;border-radius:50%;background:transparent;color:var(--ink3);font-size:20px;line-height:1;cursor:pointer}
+.lav-del:hover{background:var(--surface2);color:var(--ink)}
+
+/* traguardi */
+.trofeo{display:flex;gap:12px;align-items:flex-start;background:var(--surface);border-radius:22px;padding:1rem 1.1rem;margin-bottom:8px}
+.trofeo-ico{font-size:26px;line-height:1}
+.trofeo-body{flex:1;min-width:0}
+.trofeo-date{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3)}
+.trofeo-title{font-stretch:75%;font-size:1.25rem;font-weight:850;text-transform:uppercase;line-height:1.05;color:var(--ink);margin-top:3px}
+.trofeo-note{font-size:13.5px;color:var(--ink2);margin-top:6px;line-height:1.45;white-space:pre-wrap}
+.trofeo-new{background:var(--surface);border-radius:22px;padding:1rem 1.1rem;margin-bottom:1.1rem}
+.trofeo-new .mini-form{margin-top:0}
+
+/* suggerimenti sotto Programma e Titolo ARYA */
+.sugg{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.sugg:empty{display:none}
+.sugg-pill{font-size:13px;font-weight:700;min-height:36px;padding:0 14px;border:0;border-radius:999px;background:var(--surface2);color:var(--ink);cursor:pointer;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sugg-pill:hover{background:var(--line)}
+
 
 /* emoji delle schede: accanto alla parola, sul telefono sopra */
 .tab-ico{margin-right:6px}
@@ -278,7 +347,8 @@ button,a,label,select,input,textarea{touch-action:manipulation}
   .save-bar{bottom:calc(84px + var(--safe-b))}
   .save-bar .btn-primary{flex:1;min-height:52px;font-size:15px}
   .arya-card.compact-row{flex-direction:column;align-items:stretch;gap:.9rem}
-  .btn-small,.day-sess-goto{min-height:42px}
+  .btn-small,.day-sess-goto,.sugg-pill{min-height:42px}
+  .tab{font-size:10.5px}
   /* fuori dalla Panoramica la testata si fa piccola: il modulo parte subito */
   body:not([data-tab="home"]) .header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-top:calc(.9rem + env(safe-area-inset-top,0px));padding-bottom:0}
   body:not([data-tab="home"]) .header h1{font-size:2.2rem}
@@ -489,7 +559,8 @@ async function pull() {
   var dirty = {}; dirtyKeys().forEach(function(k) { dirty[k] = 1; });
   var remote = {}, changed = false, k;
   r.data.forEach(function(x) { remote[x.id] = x.data; });
-  for (k in remote) if (!dirty[k] && !sameVal(state[k], remote[k])) { state[k] = remote[k]; changed = true; }
+  // una copia, non la stessa voce di "synced": se no, correggendola qui cambierebbe anche il confronto e non partirebbe mai
+  for (k in remote) if (!dirty[k] && !sameVal(state[k], remote[k])) { state[k] = JSON.parse(JSON.stringify(remote[k])); changed = true; }
   for (k in synced) if (!(k in remote) && !dirty[k] && (k in state)) { delete state[k]; changed = true; }
   synced = remote;
   persistLocal();
@@ -524,6 +595,8 @@ function rerender() {
   renderTabs();
   if (currentTab === 'home') renderHome();
   else if (currentTab === 'storico') renderStorico();
+  else if (currentTab === 'lavagna') renderLavagna();
+  else if (currentTab === 'traguardi') renderTraguardi();
   else renderMain();
 }
 
@@ -772,6 +845,181 @@ function toggleRestDay(dateStr) {
   showDayDetail(dateStr);
 }
 
+/* ── OBIETTIVO SETTIMANALE ───────────────────────────────────── */
+// Ogni sfida è una voce "obiettivo_<lunedì da cui vale>" = {name, n, weeks, runs}:
+// vale fino alla sfida successiva (o per "weeks" settimane), così cambiare obiettivo non tocca le settimane già giocate.
+var _goalForm = null; // modulo aperto: {editing, from, name, n, weeks, runs}
+
+function dayAdd(dateStr, n) {
+  var d = new Date(dateStr + 'T00:00:00Z');
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+
+function mondayOf(dateStr) {
+  return dayAdd(dateStr, -((new Date(dateStr + 'T00:00:00Z').getUTCDay() + 6) % 7));
+}
+
+// "Arya Tonifica & Drena", "Tonifica & Drena " e "TONIFICA & DRENA" sono lo stesso programma
+function progKey(s) {
+  return String(s || '').toLowerCase().replace(/\barya\b/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function goalStarts() {
+  var out = [];
+  for (var k in state) if (/^obiettivo_\d{4}-\d{2}-\d{2}$/.test(k)) out.push(k.slice(10));
+  return out.sort();
+}
+
+// l'ultima sfida iniziata entro il lunedì "mon", anche se già finita (null se nessuna)
+function lastGoal(mon) {
+  var starts = goalStarts(), from = null;
+  for (var i = 0; i < starts.length; i++) if (starts[i] <= mon) from = starts[i];
+  if (!from) return null;
+  var g = state['obiettivo_' + from];
+  var week = Math.round((Date.parse(mon) - Date.parse(from)) / 604800000) + 1;
+  return {from: from, name: g.name || '', n: g.n, weeks: g.weeks || null, runs: !!g.runs, week: week, ended: !!(g.weeks && week > g.weeks)};
+}
+
+// la sfida in corso nella settimana che inizia lunedì "mon"
+function goalFor(mon) {
+  var g = lastGoal(mon);
+  return (g && !g.ended) ? g : null;
+}
+
+// quante sessioni contano per l'obiettivo in quella settimana, e se è vinta
+function weekStat(mon) {
+  var g = goalFor(mon), count = 0;
+  for (var i = 0; i < 7; i++) {
+    var ss = getSessionsOnDate(dayAdd(mon, i));
+    for (var j = 0; j < ss.length; j++) if (ss[j].id === 'arya' || (g && g.runs && ss[j].id === 's5')) count++;
+  }
+  return {goal: g, count: count, won: !!(g && g.n && count >= g.n)};
+}
+
+function weeksWon() {
+  var starts = goalStarts();
+  if (!starts.length) return 0;
+  var won = 0, last = mondayOf(todayStr());
+  for (var mon = starts[0]; mon <= last; mon = dayAdd(mon, 7)) if (weekStat(mon).won) won++;
+  return won;
+}
+
+function calWeekOpen(mon, thisMon) {
+  var ws = weekStat(mon);
+  return '<div class="cal-week' + (ws.won ? ' won' : '') + (mon === thisMon ? ' current' : '') + '">';
+}
+
+function goalCardHtml() {
+  if (_goalForm) return goalFormHtml();
+  var mon = mondayOf(todayStr()), ws = weekStat(mon), g = ws.goal;
+  var html = '';
+  if (!g) {
+    var last = lastGoal(mon);
+    html += '<div class="goal-card"><div class="goal-label">Questa settimana</div>';
+    if (last && last.ended) {
+      var wonN = 0;
+      for (var w = 0; w < last.weeks; w++) if (weekStat(dayAdd(last.from, w * 7)).won) wonN++;
+      html += '<div class="goal-name">' + esc(last.name || 'Sfida') + ' finita</div>';
+      html += '<div class="goal-empty">' + wonN + ' settiman' + (wonN === 1 ? 'a vinta' : 'e vinte') + ' su ' + last.weeks + '. Quando vuoi, scegli la prossima sfida.</div>';
+      html += '<div class="goal-foot"><div class="goal-btns">';
+      html += '<button class="btn-small" onclick="trofeoFromGoal(\'' + last.from + '\')">🏆 Segna tra i traguardi</button>';
+      html += '<button class="btn-small" onclick="openGoalForm(false)">＋ Nuova sfida</button>';
+      html += '</div></div>';
+    } else {
+      html += '<div class="goal-name">Nessuna sfida</div>';
+      html += '<div class="goal-empty">Scegli quante sessioni fare a settimana: le settimane vinte si accendono nel calendario.</div>';
+      html += '<div class="goal-foot"><div class="goal-btns"><button class="btn-small" onclick="openGoalForm(false)">＋ Imposta un obiettivo</button></div></div>';
+    }
+    return html + '</div>';
+  }
+  var left = g.n - ws.count;
+  html += '<div class="goal-card' + (ws.won ? ' won' : '') + '">';
+  html += '<div class="goal-head"><div style="min-width:0"><div class="goal-label">Questa settimana &middot; ' + (g.weeks ? g.week + ' di ' + g.weeks : 'settimana ' + g.week) + '</div>';
+  html += '<div class="goal-name">' + esc(g.name || 'Obiettivo') + '</div></div>';
+  html += '<div class="goal-count">' + ws.count + '/' + g.n + '</div></div>';
+  html += '<div class="goal-ticks">';
+  for (var i = 0; i < g.n; i++) html += '<div class="goal-tick' + (i < ws.count ? ' on' : '') + '"></div>';
+  html += '</div>';
+  html += '<div class="goal-foot"><span>' + (ws.won ? '🏆 Settimana vinta!' : (left === 1 ? 'Ne manca 1' : 'Ne mancano ' + left) + ' entro domenica') + '</span>';
+  html += '<div class="goal-btns"><button class="btn-small" onclick="openGoalForm(true)">Modifica</button><button class="btn-small" onclick="openGoalForm(false)">＋ Nuova sfida</button></div></div>';
+  return html + '</div>';
+}
+
+function goalFormHtml() {
+  var f = _goalForm;
+  var html = '<div class="goal-card"><div class="goal-label">' + (f.editing ? 'Modifica la sfida' : 'Nuova sfida') + '</div>';
+  html += '<div class="mini-form">';
+  html += '<div class="fld"><span class="fld-label">Nome</span><input type="text" id="goal-name" placeholder="es. Tonifica &amp; Drena" value="' + esc(f.name || '') + '"></div>';
+  html += '<div class="fld-row">';
+  html += '<div class="fld"><span class="fld-label">Sessioni ARYA a settimana</span><input type="number" id="goal-n" min="1" inputmode="numeric" placeholder="6" value="' + esc(f.n || '') + '"></div>';
+  html += '<div class="fld"><span class="fld-label">Per quante settimane</span><input type="number" id="goal-weeks" min="1" inputmode="numeric" placeholder="senza fine" value="' + esc(f.weeks || '') + '"></div>';
+  html += '</div>';
+  html += '<div class="fld"><span class="fld-label">Dalla settimana del</span><input type="date" id="goal-from" value="' + esc(f.from) + '"><span class="fld-hint">Conta dal lunedì di quella settimana.</span></div>';
+  html += '<label class="chk-line"><input type="checkbox" id="goal-runs"' + (f.runs ? ' checked' : '') + '> Conta anche le corse</label>';
+  html += '<div class="actions"><button class="btn btn-primary" onclick="saveGoal()">Salva</button><button class="btn btn-secondary" onclick="closeGoalForm()">Annulla</button>';
+  if (f.editing) html += '<button class="btn btn-danger" onclick="deleteGoal()">Togli la sfida</button>';
+  return html + '</div></div></div>';
+}
+
+function openGoalForm(editing) {
+  var mon = mondayOf(todayStr()), cur = goalFor(mon);
+  if (editing && cur) {
+    _goalForm = {editing: true, from: cur.from, name: cur.name, n: cur.n, weeks: cur.weeks, runs: cur.runs};
+  } else {
+    // una sfida nuova parte da lunedì prossimo se ce n'è già una in corso, altrimenti da questa settimana
+    _goalForm = {editing: false, from: cur ? dayAdd(mon, 7) : mon, name: '', n: cur ? cur.n : '', weeks: null, runs: false};
+    if (!goalStarts().length) goalGuess(_goalForm, mon);
+  }
+  document.getElementById('goal-wrap').innerHTML = goalCardHtml();
+}
+
+// la prima volta propone il programma ARYA in corso: nome, lunedì in cui è iniziato, sessioni della settimana scorsa
+function goalGuess(f, mon) {
+  var last = null, k, m;
+  for (k in state) {
+    m = k.match(/^arya__(\d{4}-\d{2}-\d{2})/);
+    if (m && aryaSessionHasData(state[k]) && state[k].program && (!last || m[1] > last.date)) last = {date: m[1], program: state[k].program.trim()};
+  }
+  if (!last) return;
+  var pk = progKey(last.program), first = last.date;
+  for (k in state) {
+    m = k.match(/^arya__(\d{4}-\d{2}-\d{2})/);
+    if (m && m[1] < first && progKey(state[k].program) === pk) first = m[1];
+  }
+  f.name = last.program;
+  f.from = mondayOf(first);
+  var prev = weekStat(dayAdd(mon, -7)).count;
+  if (prev) f.n = prev;
+}
+
+function closeGoalForm() {
+  _goalForm = null;
+  document.getElementById('goal-wrap').innerHTML = goalCardHtml();
+}
+
+function saveGoal() {
+  var f = _goalForm;
+  var n = parseInt(document.getElementById('goal-n').value, 10);
+  if (!(n > 0)) { alert('Quante sessioni a settimana?'); return; }
+  var weeks = parseInt(document.getElementById('goal-weeks').value, 10);
+  var from = mondayOf(document.getElementById('goal-from').value || todayStr());
+  if ((!f.editing || from !== f.from) && state['obiettivo_' + from] && !confirm('Da quella settimana parte già un\'altra sfida: la sostituisco con questa?')) return;
+  if (f.editing && from !== f.from) delete state['obiettivo_' + f.from];
+  state['obiettivo_' + from] = {name: document.getElementById('goal-name').value.trim(), n: n, weeks: weeks > 0 ? weeks : null, runs: document.getElementById('goal-runs').checked};
+  _goalForm = null;
+  saveState();
+  renderHome();
+}
+
+function deleteGoal() {
+  if (!confirm('Tolgo questa sfida? Le sessioni restano tutte: cambia solo il conteggio delle settimane vinte.')) return;
+  delete state['obiettivo_' + _goalForm.from];
+  _goalForm = null;
+  saveState();
+  renderHome();
+}
+
 function renderHome() {
   var today = todayStr();
   var MONTHS = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
@@ -813,7 +1061,11 @@ function renderHome() {
   html += '<div class="home-stat"><div class="home-stat-val">' + totalSessions + '</div><div class="home-stat-label">Sessioni totali</div></div>';
   html += '<div class="home-stat"><div class="home-stat-val">' + monthSess + '</div><div class="home-stat-label">Questo mese</div></div>';
   html += '<div class="home-stat"><div class="home-stat-val">' + streak + '</div><div class="home-stat-label">Streak giorni</div></div>';
+  html += '<div class="home-stat"><div class="home-stat-val">' + weeksWon() + '</div><div class="home-stat-label">Settimane vinte</div></div>';
   html += '</div>';
+
+  // obiettivo della settimana in corso
+  html += '<div id="goal-wrap">' + goalCardHtml() + '</div>';
 
   // calendar nav
   html += '<div class="cal-nav">';
@@ -824,11 +1076,17 @@ function renderHome() {
 
   // grid header
   html += '<div class="cal-grid">';
+  html += '<div class="cal-week cal-dows">';
   for (var di=0;di<7;di++) html += '<div class="cal-dow">' + DOWS[di] + '</div>';
+  html += '</div>';
 
   // first day of month (Mon=0)
   var firstDay = new Date(calYear, calMonth, 1);
   var startDow = (firstDay.getDay() + 6) % 7; // Mon-based
+  // i tasselli si raggruppano a sette, una cornice per settimana
+  var gridStart = dayAdd(calYear + '-' + (calMonth+1<10?'0':'') + (calMonth+1) + '-01', -startDow);
+  var thisMon = mondayOf(today);
+  var cellN = 0;
   var daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
   var daysInPrev  = new Date(calYear, calMonth, 0).getDate();
 
@@ -839,6 +1097,7 @@ function renderHome() {
     var prevYear  = calMonth === 0 ? calYear-1 : calYear;
     var prevStr   = prevYear + '-' + (prevMonth+1<10?'0':'') + (prevMonth+1) + '-' + (prevD<10?'0':'') + prevD;
     var prevSess  = getSessionsOnDate(prevStr);
+    if (cellN % 7 === 0) html += calWeekOpen(dayAdd(gridStart, cellN), thisMon);
     html += '<div class="cal-day other-month" onclick="showDayDetail(\'' + prevStr + '\')">';
     html += '<span class="cal-num">' + prevD + '</span>';
     if (prevSess.length) {
@@ -849,6 +1108,7 @@ function renderHome() {
     }
     if (isRestDay(prevStr)) html += '<div class="cal-rest-badge">R</div>';
     html += '</div>';
+    if (++cellN % 7 === 0) html += '</div>';
   }
 
   // current month days
@@ -857,10 +1117,12 @@ function renderHome() {
     var sessions = getSessionsOnDate(dateStr);
     var isToday  = dateStr === today;
     var isSplit  = sessions.length > 1;
+    if (cellN % 7 === 0) html += calWeekOpen(dayAdd(gridStart, cellN), thisMon);
     html += '<div class="cal-day' + (isToday?' today':'') + (isSplit?' split':'') + '" onclick="showDayDetail(\'' + dateStr + '\')">';
     if (isSplit) {
       html += calSplitBands(sessions, day, isRestDay(dateStr));
       html += '</div>';
+      if (++cellN % 7 === 0) html += '</div>';
       continue;
     }
     html += '<span class="cal-num">' + day + '</span>';
@@ -872,6 +1134,7 @@ function renderHome() {
     }
     if (isRestDay(dateStr)) html += '<div class="cal-rest-badge">R</div>';
     html += '</div>';
+    if (++cellN % 7 === 0) html += '</div>';
   }
 
   // next month padding
@@ -881,10 +1144,12 @@ function renderHome() {
     var nextMonth = calMonth === 11 ? 0 : calMonth+1;
     var nextYear  = calMonth === 11 ? calYear+1 : calYear;
     var nextStr   = nextYear + '-' + (nextMonth+1<10?'0':'') + (nextMonth+1) + '-' + (ni<10?'0':'') + ni;
+    if (cellN % 7 === 0) html += calWeekOpen(dayAdd(gridStart, cellN), thisMon);
     html += '<div class="cal-day other-month" onclick="showDayDetail(\'' + nextStr + '\')">';
     html += '<span class="cal-num">' + ni + '</span>';
     if (isRestDay(nextStr)) html += '<div class="cal-rest-badge">R</div>';
     html += '</div>';
+    if (++cellN % 7 === 0) html += '</div>';
   }
 
   html += '</div>'; // cal-grid
@@ -910,8 +1175,12 @@ function renderHome() {
   // day detail placeholder
   html += '<div id="day-detail-wrap"></div>';
 
-  // l'archivio Carol non sta più nella barra in basso: si apre da qui
+  // traguardi e archivio Carol non stanno nella barra in basso: si aprono da qui
+  var nTrofei = trofeoList().length;
+  html += '<div class="home-links">';
+  html += '<button class="archive-link" onclick="switchTab(\'traguardi\')">🏆 Traguardi' + (nTrofei ? ' · ' + nTrofei : '') + '</button>';
   html += '<button class="archive-link" onclick="switchTab(carolCurrentSub)">📦 Archivio</button>';
+  html += '</div>';
 
   document.getElementById('main-content').innerHTML = html;
 }
@@ -990,6 +1259,157 @@ function goToSess(sid, dateStr) {
   if (CAROL_IDS.indexOf(sid) !== -1) carolCurrentSub = sid;
   renderTabs();
   renderMain();
+}
+
+function newId() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+}
+
+/* ── LAVAGNA ─────────────────────────────────────────────────── */
+// appunti sparsi (attrezzi, ricerche, idee): ogni appunto è una voce "lavagna_<id>" = {text, done, at, doneAt}
+function renderLavagna() {
+  var open = [], done = [];
+  for (var k in state) {
+    if (k.indexOf('lavagna_') !== 0) continue;
+    var it = {id: k.slice(8), v: state[k]};
+    (it.v.done ? done : open).push(it);
+  }
+  open.sort(function(a, b) { return (b.v.at || '').localeCompare(a.v.at || ''); });
+  done.sort(function(a, b) { return (b.v.doneAt || '').localeCompare(a.v.doneAt || ''); });
+  var html = '<div class="session-bar"><div class="session-info"><h2>Lavagna</h2><p>' + open.length + ' da fare' + (done.length ? ' &middot; ' + done.length + ' fatt' + (done.length === 1 ? 'o' : 'i') : '') + '</p></div></div>';
+  html += '<div class="lav-add"><textarea id="lav-new" rows="1" placeholder="Attrezzi, ricerche, idee..." oninput="fitLav(this)" onkeydown="if(event.key===\'Enter\'&&!event.shiftKey&&!event.isComposing){event.preventDefault();addLavagna()}"></textarea><button class="btn btn-primary" onclick="addLavagna()">Aggiungi</button></div>';
+  if (!open.length && !done.length) html += '<div class="hist-empty">La lavagna è vuota: scrivi qui quello che ti viene in mente sull\'allenamento.</div>';
+  var all = open.concat(done);
+  for (var i = 0; i < all.length; i++) {
+    var x = all[i];
+    html += '<div class="lav-item' + (x.v.done ? ' done' : '') + '">';
+    html += '<button class="chk' + (x.v.done ? ' done' : '') + '" onclick="toggleLavagna(\'' + x.id + '\')" aria-label="Fatto"><span class="chk-icon"></span></button>';
+    html += '<textarea class="lav-text" rows="1" oninput="saveLavagna(\'' + x.id + '\',this.value);fitLav(this)">' + esc(x.v.text || '') + '</textarea>';
+    html += '<button class="lav-del" onclick="deleteLavagna(\'' + x.id + '\')" aria-label="Cancella">&times;</button>';
+    html += '</div>';
+  }
+  document.getElementById('main-content').innerHTML = html;
+  var tas = document.querySelectorAll('.lav-text');
+  for (var j = 0; j < tas.length; j++) fitLav(tas[j]);
+}
+
+// l'appunto cresce con il testo, senza barre di scorrimento
+function fitLav(el) {
+  el.style.height = 'auto';
+  el.style.height = el.scrollHeight + 'px';
+}
+
+function addLavagna() {
+  var el = document.getElementById('lav-new'), text = el.value.trim();
+  if (!text) { el.focus(); return; }
+  state['lavagna_' + newId()] = {text: text, done: false, at: new Date().toISOString()};
+  saveState();
+  renderLavagna();
+  document.getElementById('lav-new').focus();
+}
+
+function saveLavagna(id, val) {
+  var it = state['lavagna_' + id];
+  if (!it) return;
+  it.text = val;
+  saveLocalOnly();
+}
+
+function toggleLavagna(id) {
+  var it = state['lavagna_' + id];
+  if (!it) return;
+  it.done = !it.done;
+  if (it.done) it.doneAt = new Date().toISOString();
+  else delete it.doneAt;
+  saveState();
+  renderLavagna();
+}
+
+function deleteLavagna(id) {
+  if (!confirm('Cancellare questo appunto?')) return;
+  delete state['lavagna_' + id];
+  saveState();
+  renderLavagna();
+}
+
+/* ── TRAGUARDI ───────────────────────────────────────────────── */
+// ogni traguardo è una voce "traguardo_<id>" = {date, title, note}
+var _trofeoEdit = null;  // traguardo aperto nel modulo: il suo id, oppure 'new'
+var _trofeoDraft = null; // proposta per un traguardo nuovo (dalla sfida appena finita)
+
+function trofeoList() {
+  var out = [];
+  for (var k in state) if (k.indexOf('traguardo_') === 0) out.push({id: k.slice(10), t: state[k]});
+  out.sort(function(a, b) { return (b.t.date || '').localeCompare(a.t.date || ''); });
+  return out;
+}
+
+function trofeoFormHtml(id, t) {
+  var html = '<div class="mini-form">';
+  html += '<div class="fld"><span class="fld-label">Traguardo</span><input type="text" id="tr-title" placeholder="es. ARYA On Fire completato" value="' + esc(t.title || '') + '"></div>';
+  html += '<div class="fld"><span class="fld-label">Data</span><input type="date" id="tr-date" value="' + esc(t.date || todayStr()) + '"></div>';
+  html += '<div class="fld"><span class="fld-label">Nota</span><textarea id="tr-note" placeholder="Com\'è andata, cosa ti porti dietro...">' + esc(t.note || '') + '</textarea></div>';
+  html += '<div class="actions"><button class="btn btn-primary" onclick="saveTrofeo(\'' + id + '\')">Salva</button><button class="btn btn-secondary" onclick="closeTrofeo()">Annulla</button>';
+  if (id !== 'new') html += '<button class="btn btn-danger" onclick="deleteTrofeo(\'' + id + '\')">Elimina</button>';
+  return html + '</div></div>';
+}
+
+function renderTraguardi() {
+  var list = trofeoList();
+  var html = '<div class="session-bar"><div class="session-info"><h2>🏆 Traguardi</h2><p>' + (list.length ? list.length + (list.length === 1 ? ' traguardo raggiunto' : ' traguardi raggiunti') : 'I passi che vale la pena ricordare') + '</p></div></div>';
+  if (_trofeoEdit === 'new') html += '<div class="trofeo-new">' + trofeoFormHtml('new', _trofeoDraft || {}) + '</div>';
+  else html += '<div class="actions" style="margin:0 0 1.1rem"><button class="btn btn-primary" onclick="openTrofeo(\'new\')">＋ Nuovo traguardo</button></div>';
+  if (!list.length && _trofeoEdit !== 'new') html += '<div class="hist-empty">Ancora nessun traguardo: il primo lo scrivi tu.</div>';
+  for (var i = 0; i < list.length; i++) {
+    var it = list[i];
+    if (_trofeoEdit === it.id) { html += '<div class="trofeo-new">' + trofeoFormHtml(it.id, it.t) + '</div>'; continue; }
+    var p = (it.t.date || '').split('-');
+    html += '<div class="trofeo"><div class="trofeo-ico">🏆</div><div class="trofeo-body">';
+    if (it.t.date) html += '<div class="trofeo-date">' + p[2] + '/' + p[1] + '/' + p[0] + '</div>';
+    html += '<div class="trofeo-title">' + esc(it.t.title || 'Senza titolo') + '</div>';
+    if (it.t.note) html += '<div class="trofeo-note">' + esc(it.t.note) + '</div>';
+    html += '</div><button class="btn-small" onclick="openTrofeo(\'' + it.id + '\')">Modifica</button></div>';
+  }
+  html += '<div class="home-links"><button class="archive-link" onclick="switchTab(\'home\')">← Panoramica</button></div>';
+  document.getElementById('main-content').innerHTML = html;
+}
+
+function openTrofeo(id) {
+  _trofeoEdit = id;
+  renderTraguardi();
+}
+
+function closeTrofeo() {
+  _trofeoEdit = null;
+  _trofeoDraft = null;
+  renderTraguardi();
+}
+
+// dalla sfida finita: titolo e data (la sua ultima domenica) già scritti
+function trofeoFromGoal(from) {
+  var g = state['obiettivo_' + from];
+  _trofeoEdit = 'new';
+  _trofeoDraft = {title: (g.name || 'Sfida') + ' completato', date: dayAdd(from, (g.weeks || 1) * 7 - 1), note: ''};
+  switchTab('traguardi');
+}
+
+function saveTrofeo(id) {
+  var title = document.getElementById('tr-title').value.trim();
+  if (!title) { alert('Scrivi il traguardo.'); return; }
+  if (id === 'new') id = newId();
+  state['traguardo_' + id] = {title: title, date: document.getElementById('tr-date').value || todayStr(), note: document.getElementById('tr-note').value.trim()};
+  _trofeoEdit = null;
+  _trofeoDraft = null;
+  saveState();
+  renderTraguardi();
+}
+
+function deleteTrofeo(id) {
+  if (!confirm('Eliminare questo traguardo?')) return;
+  delete state['traguardo_' + id];
+  _trofeoEdit = null;
+  saveState();
+  renderTraguardi();
 }
 
 /* ── STORICO COMPLETO ────────────────────────────────────────── */
@@ -1141,6 +1561,7 @@ function renderTabs() {
     if (CAROL_IDS.indexOf(s.id) !== -1) continue;
     html += '<button class="tab' + (s.id === currentTab ? ' active' : '') + '" onclick="switchTab(\'' + s.id + '\')">' + s.name + '</button>';
   }
+  html += '<button class="tab' + (currentTab === 'lavagna' ? ' active' : '') + '" onclick="switchTab(\'lavagna\')">📌 Lavagna</button>';
   document.getElementById('tabs-wrap').innerHTML = html.replace(/(>)([^<]*?)(<\/button>)/g, function(m, a, t, b) { return a + tabLabel(t) + b; });
   document.body.setAttribute('data-tab', currentTab);
 }
@@ -1158,7 +1579,10 @@ function switchTab(id) {
   renderTabs();
   if (id === 'home') renderHome();
   else if (id === 'storico') renderStorico();
+  else if (id === 'lavagna') renderLavagna();
+  else if (id === 'traguardi') renderTraguardi();
   else renderMain();
+  window.scrollTo(0, 0);
 }
 
 function getRunSess(date) {
@@ -1400,6 +1824,54 @@ function saveArya(field, val) {
   saveLocalOnly();
 }
 
+// suggerimenti per Programma e Titolo: le voci già scritte nelle altre sessioni, le più recenti prima.
+// Ogni parola scritta deve essere l'inizio di una parola della voce, senza badare a maiuscole e alla parola "Arya":
+// "arya t" trova "Tonifica & Drena" ma non "Strong"; "sett 3" trova "Settimana 3/3" ma non "Settimana 2/3".
+function sugWords(s) {
+  return progKey(s).split(/[\s,;:()\-–—]+/).filter(Boolean);
+}
+
+function aryaSuggestions(field, query) {
+  var here = aryaKey(getDate('arya'), aryaCurrentIdx), groups = {}, k, m;
+  for (k in state) {
+    m = k.match(/^arya__(\d{4}-\d{2}-\d{2})(?:__(\d+))?$/);
+    if (!m || k === here || !state[k][field]) continue;
+    var val = String(state[k][field]).trim(), key = progKey(val);
+    if (!key) continue;
+    var when = m[1] + '__' + ('0' + (m[2] || 1)).slice(-2);
+    if (!groups[key] || when > groups[key].when) groups[key] = {val: val, when: when};
+  }
+  var cur = progKey(query), words = sugWords(query), out = [];
+  for (k in groups) {
+    if (k === cur) continue; // è già scritto così
+    var have = sugWords(k);
+    if (words.every(function(w) { return have.some(function(h) { return h.indexOf(w) === 0; }); })) out.push(groups[k]);
+  }
+  out.sort(function(a, b) { return b.when.localeCompare(a.when); });
+  return out.slice(0, 5).map(function(x) { return x.val; });
+}
+
+function showSugg(field) {
+  var box = document.getElementById('sugg-' + field), inp = document.getElementById('arya-' + field);
+  if (!box || !inp) return;
+  // onmousedown blocca la perdita del focus: il tocco sul suggerimento arriva prima che l'elenco si chiuda
+  box.innerHTML = aryaSuggestions(field, inp.value).map(function(v) {
+    return '<button type="button" class="sugg-pill" onmousedown="event.preventDefault()" onclick="pickSugg(\'' + field + '\',this)">' + esc(v) + '</button>';
+  }).join('');
+}
+
+function hideSugg(field) {
+  setTimeout(function() { var box = document.getElementById('sugg-' + field); if (box) box.innerHTML = ''; }, 250);
+}
+
+function pickSugg(field, btn) {
+  var inp = document.getElementById('arya-' + field);
+  inp.value = btn.textContent;
+  saveArya(field, inp.value);
+  if (field === 'program') renderAryaMain(null); // la testata mostra subito il programma
+  else document.getElementById('sugg-' + field).innerHTML = '';
+}
+
 function setAryaRating(n) {
   var d = getDate('arya');
   var s = getAryaSess(d, aryaCurrentIdx);
@@ -1446,13 +1918,15 @@ function renderAryaMain(sch) {
   // programma / raccolta ARYA
   html += '<div class="arya-card">';
   html += '<div class="arya-card-label">Programma / Raccolta ARYA</div>';
-  html += '<input type="text" id="arya-program" placeholder="es. Strong, Travel, Gambe..." value="' + esc(s.program || '') + '" oninput="saveArya(\'program\',this.value)">';
+  html += '<input type="text" id="arya-program" autocomplete="off" placeholder="es. Strong, Travel, Gambe..." value="' + esc(s.program || '') + '" oninput="saveArya(\'program\',this.value);showSugg(\'program\')" onfocus="showSugg(\'program\')" onblur="hideSugg(\'program\')">';
+  html += '<div class="sugg" id="sugg-program"></div>';
   html += '</div>';
 
   // titolo workout
   html += '<div class="arya-card">';
   html += '<div class="arya-card-label">Titolo workout</div>';
-  html += '<input type="text" id="arya-title" placeholder="es. Strong Settimana 1 - Lower Body" value="' + esc(s.title || '') + '" oninput="saveArya(\'title\',this.value)">';
+  html += '<input type="text" id="arya-title" autocomplete="off" placeholder="es. Strong Settimana 1 - Lower Body" value="' + esc(s.title || '') + '" oninput="saveArya(\'title\',this.value);showSugg(\'title\')" onfocus="showSugg(\'title\')" onblur="hideSugg(\'title\')">';
+  html += '<div class="sugg" id="sugg-title"></div>';
   html += '</div>';
 
   // categoria + durata in riga compatta
